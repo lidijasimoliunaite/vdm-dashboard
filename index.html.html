@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VDM Statistika — LTG Infra</title>
+<link href="https://fonts.googleapis.com/css2?family=Avenir+Next:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#1b1b1b;
+  --panel:#242424;
+  --panel2:#2d2d2d;
+  --border:#3a3a3a;
+  --border2:#444;
+  --text:#e8e8e8;
+  --text2:#b0b0b0;
+  --text3:#787878;
+  --esri-blue:#009af2;
+  --esri-green:#71c96e;
+  --esri-amber:#f2a60d;
+  --esri-red:#fe5050;
+  --esri-teal:#00c4b4;
+  --ltg:#1a5c38;
+  --ltg2:#2d8550;
+}
+
+body{
+  font-family:'Avenir Next','Avenir',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  font-size:13px;
+}
+
+/* ── HEADER ── */
+.header{
+  height:50px;
+  background:#1b1b1b;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  gap:10px;
+  flex-shrink:0;
+}
+
+.header-logo{
+  display:flex;align-items:center;gap:8px;
+  padding-right:12px;
+  border-right:1px solid var(--border2);
+}
+
+.esri-icon{
+  width:28px;height:28px;
+  background:#f27316;
+  border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:white;
+  letter-spacing:0;
+}
+
+.header-title{
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  letter-spacing:0.1px;
+}
+
+.header-actions{
+  margin-left:auto;
+  display:flex;align-items:center;gap:8px;
+}
+
+.hbtn{
+  height:28px;
+  padding:0 10px;
+  border-radius:3px;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  font-family:inherit;
+  display:flex;align-items:center;gap:5px;
+  transition:all .12s;
+}
+.hbtn.ghost{background:none;border:1px solid var(--border2);color:var(--text2)}
+.hbtn.ghost:hover{border-color:#666;color:var(--text)}
+.hbtn.primary{background:var(--esri-blue);border:1px solid var(--esri-blue);color:white}
+.hbtn.primary:hover{background:#0088d9}
+
+.header-user{
+  display:flex;align-items:center;gap:7px;
+  padding-left:10px;
+  border-left:1px solid var(--border2);
+  font-size:12px;color:var(--text2);
+}
+.hav{
+  width:24px;height:24px;border-radius:50%;
+  background:#3a3a3a;border:1px solid var(--border2);
+  font-size:10px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ── GRID LAYOUT ── */
+.grid{
+  flex:1;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr 280px;
+  grid-template-rows: 100px 1fr 1fr;
+  gap:3px;
+  padding:3px;
+  background:#111;
+  overflow:hidden;
+}
+
+/* PANEL BASE */
+.panel{
+  background:var(--panel);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+.panel-header{
+  padding:10px 14px 8px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.panel-title{
+  font-size:11px;
+  font-weight:600;
+  color:var(--text2);
+  text-transform:uppercase;
+  letter-spacing:0.8px;
+}
+
+.panel-body{
+  flex:1;
+  padding:14px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── INDICATOR (single number) ── */
+.indicator{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  height:100%;gap:2px;
+  padding:8px 14px;
+}
+
+.ind-val{
+  font-size:36px;
+  font-weight:300;
+  color:var(--text);
+  letter-spacing:-1.5px;
+  line-height:1;
+  font-family:'Avenir Next',Arial,sans-serif;
+}
+
+.ind-unit{font-size:16px;color:var(--text3);font-weight:400;margin-left:2px}
+.ind-label{font-size:11px;color:var(--text2);margin-top:4px;text-align:center;line-height:1.3}
+.ind-sub{font-size:10px;color:var(--text3);margin-top:2px;text-align:center}
+
+/* Colored accent line top */
+.accent-top::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:3px;
+}
+.acc-blue::before{background:var(--esri-blue)}
+.acc-green::before{background:var(--esri-green)}
+.acc-amber::before{background:var(--esri-amber)}
+.acc-red::before{background:var(--esri-red)}
+.acc-teal::before{background:var(--esri-teal)}
+.acc-ltg::before{background:var(--ltg2)}
+
+/* ── GAUGE / DONUT ── */
+.gauge-wrap{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  flex:1;gap:0;
+}
+
+.gauge-pct{
+  font-size:28px;font-weight:300;
+  color:var(--text);letter-spacing:-1px;
+  margin-top:8px;
+}
+
+.gauge-row{
+  display:flex;justify-content:space-between;
+  width:100%;margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid var(--border);
+  font-size:11px;
+}
+.gr-item{}
+.gr-val{font-size:13px;font-weight:600;color:var(--text)}
+.gr-lbl{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── BAR CHART ── */
+.bar-chart{display:flex;flex-direction:column;gap:8px;flex:1;justify-content:center}
+
+.bc-row{display:flex;align-items:center;gap:8px}
+.bc-label{
+  font-size:11px;color:var(--text2);
+  width:130px;flex-shrink:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.bc-track{
+  flex:1;height:8px;
+  background:#333;border-radius:2px;overflow:hidden;
+}
+.bc-fill{height:100%;border-radius:2px;transition:width 1.3s ease}
+.bc-val{
+  font-size:11px;color:var(--text2);
+  width:55px;text-align:right;flex-shrink:0;
+  font-family:monospace;
+}
+
+/* ── STATION CHART ── */
+.sta-chart{display:flex;flex-direction:column;gap:5px;flex:1;overflow:hidden}
+
+.sc-row{display:flex;align-items:center;gap:7px}
+.sc-name{font-size:10.5px;color:var(--text2);width:32px;flex-shrink:0;font-family:monospace}
+.sc-track{flex:1;height:6px;background:#333;border-radius:2px;overflow:hidden}
+.sc-fill{height:100%;border-radius:2px;transition:width 1.3s ease}
+.sc-n{font-size:10.5px;color:var(--text3);width:32px;text-align:right;flex-shrink:0;font-family:monospace}
+
+/* ── OBJECT LIST ── */
+.obj-list{display:flex;flex-direction:column;gap:5px;flex:1;overflow:hidden}
+
+.ol-row{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;
+  background:#2d2d2d;
+  border-radius:3px;
+  border-left:3px solid;
+  transition:background .1s;
+}
+.ol-row:hover{background:#333}
+
+.ol-sym{width:10px;height:10px;flex-shrink:0}
+.ol-name{font-size:11.5px;color:var(--text);flex:1}
+.ol-code{font-size:10px;color:var(--text3);font-family:monospace}
+.ol-count{font-size:13px;font-weight:600;color:var(--text);font-family:monospace}
+.ol-pct{font-size:10px;color:var(--text3);width:34px;text-align:right}
+
+/* ── QUALITY ── */
+.qrow{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;
+  border-bottom:1px solid var(--border);
+  font-size:11.5px;
+}
+.qrow:last-child{border-bottom:none}
+.qkey{color:var(--text2)}
+.qval{font-family:monospace;font-size:11px;font-weight:600}
+.qval.ok{color:var(--esri-green)}
+.qval.warn{color:var(--esri-amber)}
+.qval.err{color:var(--esri-red)}
+
+.qalert{
+  display:flex;gap:8px;padding:8px 10px;
+  border-radius:3px;margin-top:8px;
+  background:rgba(242,166,13,0.12);
+  border:1px solid rgba(242,166,13,0.25);
+  font-size:11px;color:var(--text2);line-height:1.5;
+}
+.qalert-icon{color:var(--esri-amber);flex-shrink:0;margin-top:1px}
+
+/* ── RIGHT COLUMN ── */
+.right-col{
+  grid-row:1/4;
+  grid-column:4;
+  background:var(--panel);
+  display:flex;flex-direction:column;
+  border-left:1px solid var(--border);
+  overflow:hidden;
+}
+
+.rc-section{
+  padding:14px;
+  border-bottom:1px solid var(--border);
+}
+
+.rc-title{
+  font-size:10px;font-weight:600;
+  color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.8px;
+  margin-bottom:12px;
+}
+
+/* Track type list in right col */
+.tt-row{margin-bottom:10px}
+.tt-header{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.tt-name{color:var(--text2)}
+.tt-km{color:var(--text);font-family:monospace;font-weight:600}
+.tt-pct{color:var(--text3)}
+.tt-track{height:5px;background:#333;border-radius:2px;overflow:hidden}
+.tt-fill{height:100%;border-radius:2px;transition:width 1.3s ease}
+
+/* Status items */
+.st-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 0;border-bottom:1px solid var(--border);
+  font-size:11.5px;
+}
+.st-item:last-child{border-bottom:none}
+.st-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.st-label{color:var(--text2);flex:1}
+.st-val{color:var(--text);font-family:monospace;font-size:11px;font-weight:600}
+
+/* SPAN helpers */
+.span-2-col{grid-column:span 2}
+.span-2-row{grid-row:span 2}
+
+/* Scrollable body */
+.scrollable{overflow-y:auto}
+.scrollable::-webkit-scrollbar{width:4px}
+.scrollable::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="esri-icon">LTG</div>
+    <div class="header-title">VDM Statistika</div>
+  </div>
+  <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--esri-green);display:inline-block"></span>
+    vdm_dev.silver · 2026-03-13 · 10,000 objektų
+  </div>
+  <div class="header-actions">
+    <button class="hbtn ghost">⬇ Eksportuoti</button>
+    <button class="hbtn primary">↻ Atnaujinti</button>
+  </div>
+  <div class="header-user">
+    <div class="hav">LŠ</div>
+    Lidija Šimoliūnaitė
+  </div>
+</div>
+
+<!-- DASHBOARD GRID -->
+<div class="grid">
+
+  <!-- [1,1] INDICATOR: Bendras ilgis -->
+  <div class="panel accent-top acc-ltg">
+    <div class="indicator">
+      <div class="ind-val">3,727<span class="ind-unit">km</span></div>
+      <div class="ind-label">Eksploatacinis kelių ilgis</div>
+      <div class="ind-sub">mainTrack + sidingTrack + secondaryTrack</div>
+    </div>
+  </div>
+
+  <!-- [1,2] INDICATOR: Užbaigtumas -->
+  <div class="panel accent-top acc-amber">
+    <div class="indicator">
+      <div class="ind-val" style="color:var(--esri-amber)">90.8<span class="ind-unit">%</span></div>
+      <div class="ind-label">VDM kelių tinklo užbaigtumas</div>
+      <div class="ind-sub" style="color:var(--esri-amber)">887 km dar neskaitmenizuota</div>
+    </div>
+  </div>
+
+  <!-- [1,3] INDICATOR: Objektai -->
+  <div class="panel accent-top acc-blue">
+    <div class="indicator">
+      <div class="ind-val" style="color:var(--esri-blue)">10,000</div>
+      <div class="ind-label">VDM objektai iš viso</div>
+      <div class="ind-sub">silver.objects · iešmai, šviesoforai, atramos</div>
+    </div>
+  </div>
+
+  <!-- [2,1] GAUGE: Progresas -->
+  <div class="panel accent-top acc-ltg">
+    <div class="panel-header">
+      <span class="panel-title">VDM užbaigtumo progresas</span>
+    </div>
+    <div class="panel-body">
+      <div class="gauge-wrap">
+        <svg width="170" height="97" viewBox="0 0 170 97">
+          <path d="M12 92 A73 73 0 0 1 158 92" fill="none" stroke="#333" stroke-width="12" stroke-linecap="round"/>
+          <path d="M12 92 A73 73 0 0 1 158 92" fill="none" stroke="#2d8550" stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="229.3" stroke-dashoffset="21">
+            <animate attributeName="stroke-dashoffset" from="229.3" to="21" dur="1.5s" fill="freeze"/>
+          </path>
+          <path d="M12 92 A73 73 0 0 1 158 92" fill="none" stroke="#444" stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="229.3" stroke-dashoffset="-208.3"/>
+        </svg>
+        <div class="gauge-pct">90.8%</div>
+        <div class="gauge-row">
+          <div class="gr-item">
+            <div class="gr-val" style="color:var(--esri-green)">3,441 km</div>
+            <div class="gr-lbl">faktinis VDM</div>
+          </div>
+          <div class="gr-item" style="text-align:right">
+            <div class="gr-val" style="color:var(--text3)">3,727 km</div>
+            <div class="gr-lbl">tikslas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [2,2] BAR CHART: Kelių tipai -->
+  <div class="panel accent-top acc-green">
+    <div class="panel-header">
+      <span class="panel-title">Keliai pagal tipą · km</span>
+    </div>
+    <div class="panel-body">
+      <div class="bar-chart">
+        <div class="bc-row">
+          <span class="bc-label">Pagrindinis <span style="color:var(--text3);font-size:10px">(mainTrack)</span></span>
+          <div class="bc-track"><div class="bc-fill" style="width:100%;background:var(--esri-green)"></div></div>
+          <span class="bc-val" style="color:var(--esri-green)">544.4 km</span>
+        </div>
+        <div class="bc-row">
+          <span class="bc-label">Šoninis <span style="color:var(--text3);font-size:10px">(sidingTrack)</span></span>
+          <div class="bc-track"><div class="bc-fill" style="width:33.5%;background:#5aac57"></div></div>
+          <span class="bc-val">182.1 km</span>
+        </div>
+        <div class="bc-row">
+          <span class="bc-label">Antraeilis <span style="color:var(--text3);font-size:10px">(secondaryTrack)</span></span>
+          <div class="bc-track"><div class="bc-fill" style="width:25.2%;background:#3a8c37"></div></div>
+          <span class="bc-val">136.9 km</span>
+        </div>
+        <div class="bc-row">
+          <span class="bc-label">Nepriskirti <span style="color:var(--text3);font-size:10px">(null)</span></span>
+          <div class="bc-track"><div class="bc-fill" style="width:3.2%;background:#fe5050"></div></div>
+          <span class="bc-val" style="color:var(--esri-red)">17.2 km ⚠</span>
+        </div>
+        <div class="bc-row">
+          <span class="bc-label">Jungiamasis <span style="color:var(--text3);font-size:10px">(connectingTrack)</span></span>
+          <div class="bc-track"><div class="bc-fill" style="width:1.2%;background:var(--esri-blue)"></div></div>
+          <span class="bc-val">6.5 km</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [2,3] OBJECT BREAKDOWN -->
+  <div class="panel accent-top acc-teal">
+    <div class="panel-header">
+      <span class="panel-title">Mazgų infrastruktūra · realūs CSV duomenys</span>
+    </div>
+    <div class="panel-body">
+      <div class="obj-list">
+
+        <div class="ol-row" style="border-color:var(--esri-green)">
+          <svg class="ol-sym" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4.5" fill="#71c96e"/><circle cx="5" cy="5" r="2" fill="#1b1b1b"/></svg>
+          <span class="ol-name">Šviesoforai <span class="ol-code">SVIESOF</span></span>
+          <span class="ol-count">3,790</span>
+          <span class="ol-pct">37.9%</span>
+        </div>
+
+        <div class="ol-row" style="border-color:var(--esri-amber)">
+          <svg class="ol-sym" viewBox="0 0 10 10"><polygon points="5,0.5 9.5,5 5,9.5 0.5,5" fill="#f2a60d"/></svg>
+          <span class="ol-name">Iešmai <span class="ol-code">IP / IPP / IPA</span></span>
+          <span class="ol-count">3,383</span>
+          <span class="ol-pct">33.8%</span>
+        </div>
+
+        <div class="ol-row" style="border-color:var(--esri-blue)">
+          <svg class="ol-sym" viewBox="0 0 10 10"><polygon points="5,0.5 9.5,9.5 0.5,9.5" fill="#009af2"/></svg>
+          <span class="ol-name">Atramos <span class="ol-code">AT / ATA / ATB</span></span>
+          <span class="ol-count">541</span>
+          <span class="ol-pct">5.4%</span>
+        </div>
+
+        <div class="ol-row" style="border-color:#555">
+          <svg class="ol-sym" viewBox="0 0 10 10"><line x1="0" y1="5" x2="10" y2="5" stroke="#71c96e" stroke-width="1.5" stroke-dasharray="2,2"/></svg>
+          <span class="ol-name">Signalizacijos kabeliai <span class="ol-code">SIGNKAB</span></span>
+          <span class="ol-count">92</span>
+          <span class="ol-pct">0.9%</span>
+        </div>
+
+        <div class="ol-row" style="border-color:var(--esri-red)">
+          <svg class="ol-sym" viewBox="0 0 10 10"><rect x="0.5" y="3" width="9" height="5" rx="1" fill="#fe5050"/></svg>
+          <span class="ol-name">Saugos smailės <span class="ol-code">SS</span></span>
+          <span class="ol-count">70</span>
+          <span class="ol-pct">0.7%</span>
+        </div>
+
+        <div class="ol-row" style="border-color:#555">
+          <svg class="ol-sym" viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" fill="#555"/></svg>
+          <span class="ol-name">Kiti <span class="ol-code">IPR / IPZ / IPT / ATRSANT</span></span>
+          <span class="ol-count">2,124</span>
+          <span class="ol-pct">21.2%</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- [3,1] STATIONS -->
+  <div class="panel accent-top acc-blue">
+    <div class="panel-header">
+      <span class="panel-title">Objektai pagal stotį — top 15</span>
+    </div>
+    <div class="panel-body scrollable">
+      <div class="sta-chart">
+        <div class="sc-row"><span class="sc-name">RDV</span><div class="sc-track"><div class="sc-fill" style="width:100%;background:var(--esri-blue)"></div></div><span class="sc-n">563</span></div>
+        <div class="sc-row"><span class="sc-name">PNR</span><div class="sc-track"><div class="sc-fill" style="width:69.3%;background:var(--esri-blue)"></div></div><span class="sc-n">390</span></div>
+        <div class="sc-row"><span class="sc-name">VLN</span><div class="sc-track"><div class="sc-fill" style="width:65.5%;background:var(--esri-blue)"></div></div><span class="sc-n">369</span></div>
+        <div class="sc-row"><span class="sc-name">KLP</span><div class="sc-track"><div class="sc-fill" style="width:60.2%;background:var(--esri-blue)"></div></div><span class="sc-n">339</span></div>
+        <div class="sc-row"><span class="sc-name">VAI</span><div class="sc-track"><div class="sc-fill" style="width:57%;background:#1a7fbf)"></div></div><span class="sc-n">321</span></div>
+        <div class="sc-row"><span class="sc-name">DRG</span><div class="sc-track"><div class="sc-fill" style="width:49.6%;background:#1a7fbf"></div></div><span class="sc-n">279</span></div>
+        <div class="sc-row"><span class="sc-name">PLM</span><div class="sc-track"><div class="sc-fill" style="width:48%;background:#1a7fbf"></div></div><span class="sc-n">270</span></div>
+        <div class="sc-row"><span class="sc-name">KNS</span><div class="sc-track"><div class="sc-fill" style="width:44%;background:#1a7fbf"></div></div><span class="sc-n">248</span></div>
+        <div class="sc-row"><span class="sc-name">KEN</span><div class="sc-track"><div class="sc-fill" style="width:42.5%;background:#1a6fa0"></div></div><span class="sc-n">239</span></div>
+        <div class="sc-row"><span class="sc-name">BUG</span><div class="sc-track"><div class="sc-fill" style="width:29.8%;background:#1a6fa0"></div></div><span class="sc-n">168</span></div>
+        <div class="sc-row"><span class="sc-name">NVL</span><div class="sc-track"><div class="sc-fill" style="width:29%;background:#1a6fa0"></div></div><span class="sc-n">163</span></div>
+        <div class="sc-row"><span class="sc-name">SAU</span><div class="sc-track"><div class="sc-fill" style="width:27.9%;background:#1a6fa0"></div></div><span class="sc-n">157</span></div>
+        <div class="sc-row"><span class="sc-name">KYB</span><div class="sc-track"><div class="sc-fill" style="width:25.9%;background:#155e8a"></div></div><span class="sc-n">146</span></div>
+        <div class="sc-row"><span class="sc-name">LNT</span><div class="sc-track"><div class="sc-fill" style="width:23.6%;background:#155e8a"></div></div><span class="sc-n">133</span></div>
+        <div class="sc-row"><span class="sc-name">GAI</span><div class="sc-track"><div class="sc-fill" style="width:21.7%;background:#155e8a"></div></div><span class="sc-n">122</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [3,2+3] DATA QUALITY span 2 cols -->
+  <div class="panel accent-top acc-amber span-2-col">
+    <div class="panel-header">
+      <span class="panel-title">Duomenų kokybė · silver.objects</span>
+    </div>
+    <div class="panel-body" style="flex-direction:row;gap:20px">
+
+      <!-- Z koordinatė -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Z koordinatė (aukštis)</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#333" stroke-width="7"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#71c96e" stroke-width="7"
+              stroke-dasharray="138.2" stroke-dashoffset="59.1"
+              stroke-linecap="round" transform="rotate(-90 28 28)">
+              <animate attributeName="stroke-dashoffset" from="138.2" to="59.1" dur="1.2s" fill="freeze"/>
+            </circle>
+          </svg>
+          <div>
+            <div style="font-size:20px;font-weight:300;color:var(--esri-green)">57.3%</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">5,733 iš 10,000</div>
+          </div>
+        </div>
+        <div class="qrow"><span class="qkey">Su z koordinate</span><span class="qval ok">5,733</span></div>
+        <div class="qrow"><span class="qkey">Be aukščio (z=0)</span><span class="qval warn">4,267</span></div>
+      </div>
+
+      <div style="width:1px;background:var(--border);flex-shrink:0"></div>
+
+      <!-- posStation -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Pozicijos priskyrimas</div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#333" stroke-width="7"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#fe5050" stroke-width="7"
+              stroke-dasharray="138.2" stroke-dashoffset="138.2"
+              stroke-linecap="round" transform="rotate(-90 28 28)"/>
+          </svg>
+          <div>
+            <div style="font-size:20px;font-weight:300;color:var(--esri-red)">0%</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">0 iš 10,000</div>
+          </div>
+        </div>
+        <div class="qrow"><span class="qkey">posStation</span><span class="qval err">0 / 10,000</span></div>
+        <div class="qrow"><span class="qkey">posTrack</span><span class="qval err">0 / 10,000</span></div>
+      </div>
+
+      <div style="width:1px;background:var(--border);flex-shrink:0"></div>
+
+      <!-- Import metadata -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Importo metaduomenys</div>
+        <div class="qalert">
+          <span class="qalert-icon">⚠</span>
+          <span>Visi 10,000 objektų turi tą patį modifiedBy — batch importas, ne rankinis.</span>
+        </div>
+        <div class="qrow"><span class="qkey">validFrom</span><span class="qval ok">2024-01-01</span></div>
+        <div class="qrow"><span class="qkey">modifiedDate</span><span class="qval">2026-03-13</span></div>
+        <div class="qrow"><span class="qkey">Unikalūs autoriai</span><span class="qval warn">1</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- Track types summary -->
+    <div class="rc-section">
+      <div class="rc-title">Kelio tipai</div>
+      <div class="tt-row">
+        <div class="tt-header"><span class="tt-name">mainTrack</span><span><span class="tt-km">544 km</span> <span class="tt-pct">73%</span></span></div>
+        <div class="tt-track"><div class="tt-fill" style="width:100%;background:var(--esri-green)"></div></div>
+      </div>
+      <div class="tt-row">
+        <div class="tt-header"><span class="tt-name">sidingTrack</span><span><span class="tt-km">182 km</span> <span class="tt-pct">25%</span></span></div>
+        <div class="tt-track"><div class="tt-fill" style="width:33%;background:#5aac57"></div></div>
+      </div>
+      <div class="tt-row">
+        <div class="tt-header"><span class="tt-name">secondaryTrack</span><span><span class="tt-km">137 km</span> <span class="tt-pct">18%</span></span></div>
+        <div class="tt-track"><div class="tt-fill" style="width:25%;background:#3a8c37"></div></div>
+      </div>
+      <div class="tt-row">
+        <div class="tt-header"><span class="tt-name">connectingTrack</span><span><span class="tt-km">6.5 km</span> <span class="tt-pct">1%</span></span></div>
+        <div class="tt-track"><div class="tt-fill" style="width:1.2%;background:var(--esri-blue)"></div></div>
+      </div>
+      <div class="tt-row" style="margin-bottom:0">
+        <div class="tt-header"><span class="tt-name" style="color:var(--esri-red)">null ⚠</span><span><span class="tt-km" style="color:var(--esri-red)">17 km</span></span></div>
+        <div class="tt-track"><div class="tt-fill" style="width:3%;background:var(--esri-red)"></div></div>
+      </div>
+    </div>
+
+    <!-- System status -->
+    <div class="rc-section">
+      <div class="rc-title">Sistemos būsena</div>
+      <div class="st-item">
+        <div class="st-dot" style="background:var(--esri-green)"></div>
+        <span class="st-label">vdm_dev.silver.tracks</span>
+        <span class="st-val" style="color:var(--esri-green)">OK</span>
+      </div>
+      <div class="st-item">
+        <div class="st-dot" style="background:var(--esri-green)"></div>
+        <span class="st-label">vdm_dev.silver.objects</span>
+        <span class="st-val" style="color:var(--esri-green)">OK</span>
+      </div>
+      <div class="st-item">
+        <div class="st-dot" style="background:var(--esri-amber)"></div>
+        <span class="st-label">posStation laukas</span>
+        <span class="st-val" style="color:var(--esri-amber)">TUŠČIA</span>
+      </div>
+      <div class="st-item">
+        <div class="st-dot" style="background:var(--esri-amber)"></div>
+        <span class="st-label">Z koordinatės</span>
+        <span class="st-val" style="color:var(--esri-amber)">57.3%</span>
+      </div>
+      <div class="st-item">
+        <div class="st-dot" style="background:var(--esri-red)"></div>
+        <span class="st-label">Null trackType</span>
+        <span class="st-val" style="color:var(--esri-red)">17 km</span>
+      </div>
+    </div>
+
+    <!-- Atnaujinta -->
+    <div class="rc-section" style="margin-top:auto;border-top:1px solid var(--border);border-bottom:none">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px">Paskutinis atnaujinimas</div>
+      <div style="font-size:12px;color:var(--text);font-family:monospace">2026-03-13 14:33</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">Azure Databricks · infradwh-t-001</div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
