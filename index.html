@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VDM Statistika</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:#f5f6f7;color:#1a2330;padding:20px}
+.page-title{font-size:22px;font-weight:600;color:#1a2330;margin-bottom:4px}
+.page-sub{font-size:14px;color:#8a96a8;margin-bottom:24px}
+.sec-label{font-size:13px;font-weight:600;color:#4a5568;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #1a5c38;display:inline-block}
+.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.kpi{background:#fff;border:1px solid #e2e6ea;border-radius:8px;padding:20px 22px}
+.kpi-lbl{font-size:13px;font-weight:600;color:#4a5568;margin-bottom:10px;line-height:1.4}
+.kpi-val{font-size:42px;font-weight:300;font-family:'IBM Plex Mono',monospace;color:#1a2330;letter-spacing:-2px;line-height:1}
+.kpi-unit{font-size:20px;color:#8a96a8;font-family:'IBM Plex Sans',sans-serif;margin-left:4px}
+.kpi-note{font-size:13px;color:#8a96a8;margin-top:10px;line-height:1.5}
+.card{background:#fff;border:1px solid #e2e6ea;border-radius:8px;overflow:hidden;margin-bottom:14px}
+.card-head{padding:14px 20px;background:#f9fafb;border-bottom:1px solid #e2e6ea;font-size:15px;font-weight:600;color:#1a2330;display:flex;justify-content:space-between;align-items:center}
+.card-body{padding:20px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* TRACK BARS */
+.track-rows{display:flex;flex-direction:column;gap:16px}
+.tr{display:flex;flex-direction:column;gap:5px}
+.tr-top{display:flex;justify-content:space-between;align-items:baseline}
+.tr-name{font-size:14px;color:#1a2330;font-weight:500}
+.tr-code{font-size:12px;color:#b8c0cc;font-family:'IBM Plex Mono',monospace}
+.tr-right{display:flex;align-items:baseline;gap:8px}
+.tr-km{font-size:16px;font-family:'IBM Plex Mono',monospace;font-weight:500;color:#1a2330}
+.tr-pct{font-size:13px;color:#8a96a8;font-family:'IBM Plex Mono',monospace}
+.tr-bg{height:10px;background:#eef0f3;border-radius:5px;overflow:hidden}
+.tr-fill{height:100%;border-radius:5px;transition:width 1.3s ease}
+
+/* OBJECT ROWS */
+.obj-rows{display:flex;flex-direction:column;gap:6px}
+.obj-row{border:1px solid #e2e6ea;border-radius:6px;border-left:4px solid;overflow:hidden}
+.obj-main{display:flex;align-items:center;gap:10px;padding:11px 14px;background:#f9fafb;cursor:pointer;transition:background .1s;user-select:none}
+.obj-main:hover{background:#f0f2f5}
+.obj-main.no-expand{cursor:default}
+.obj-expand-icon{font-size:10px;color:#8a96a8;transition:transform .2s;flex-shrink:0;width:12px}
+.obj-row.open .obj-expand-icon{transform:rotate(90deg)}
+.obj-name{font-size:13.5px;color:#1a2330;flex:1;font-weight:500;line-height:1.3}
+.obj-code{font-size:10.5px;color:#b8c0cc;font-family:'IBM Plex Mono',monospace;margin-left:4px;font-weight:400}
+.obj-count{font-size:16px;font-family:'IBM Plex Mono',monospace;font-weight:500;color:#1a2330;white-space:nowrap}
+.obj-unit{font-size:11px;color:#8a96a8;margin-left:3px}
+
+/* SUBTYPES */
+.obj-subtypes{display:none;border-top:1px solid #e2e6ea;background:#fff;padding:6px 0}
+.obj-row.open .obj-subtypes{display:block}
+.sub-row{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 36px;font-size:12px;border-bottom:1px solid #f5f6f7}
+.sub-row:last-child{border-bottom:none}
+.sub-row:hover{background:#f9fafb}
+.sub-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sub-name{color:#4a5568;flex:1;line-height:1.3}
+.sub-count{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:#1a2330;white-space:nowrap}
+.sub-bar-bg{width:70px;height:5px;background:#eef0f3;border-radius:3px;overflow:hidden;flex-shrink:0}
+.sub-bar{height:100%;border-radius:3px;transition:width .8s ease}
+.sub-note{font-size:10.5px;color:#8a96a8;font-style:italic;padding:6px 14px 4px 36px}
+
+/* STATIONS */
+.sta-rows{display:flex;flex-direction:column;gap:7px}
+.sc-row{display:flex;align-items:center;gap:10px}
+.sc-name{font-size:13px;font-family:'IBM Plex Mono',monospace;font-weight:500;color:#1a2330;width:40px;flex-shrink:0}
+.sc-bg{flex:1;height:8px;background:#eef0f3;border-radius:4px;overflow:hidden}
+.sc-fill{height:100%;border-radius:4px;background:#1a5c38;transition:width 1.3s ease}
+.sc-n{font-size:13px;font-family:'IBM Plex Mono',monospace;color:#4a5568;width:38px;text-align:right}
+
+/* DATA QUALITY */
+.dq-table{width:100%;border-collapse:collapse}
+.dq-table tr{border-bottom:1px solid #eef0f3}
+.dq-table tr:last-child{border-bottom:none}
+.dq-table td{padding:10px 0;font-size:14px}
+.dq-key{color:#4a5568}
+.dq-val{text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px}
+.ok{color:#1a7a3a}.warn{color:#b86e1a}.err{color:#c0392b}
+.alert-box{display:flex;gap:10px;padding:12px 14px;border-radius:6px;margin-top:14px;background:#fdf3e7;border:1px solid rgba(184,110,26,.25);font-size:13px;color:#4a5568;line-height:1.6}
+
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#e8f3ec;border-radius:5px;margin-top:10px;font-size:13px;font-weight:600;color:#1a5c38}
+
+.footer{margin-top:20px;padding-top:14px;border-top:1px solid #e2e6ea;font-size:12px;color:#b8c0cc;text-align:center}
+
+
+/* FILTER BAR */
+.filter-bar{
+  background:#fff;
+  border:1px solid #e2e6ea;
+  border-radius:8px;
+  padding:14px 20px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.filter-label{font-size:12px;font-weight:600;color:#4a5568;white-space:nowrap}
+.filter-select{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13px;
+  color:#1a2330;
+  background:#f5f6f7;
+  border:1px solid #e2e6ea;
+  border-radius:5px;
+  padding:7px 12px;
+  cursor:pointer;
+  min-width:280px;
+  outline:none;
+  transition:border-color .15s;
+}
+.filter-select:hover{border-color:#1a5c38}
+.filter-select:focus{border-color:#1a5c38;background:#fff}
+.filter-reset{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;font-weight:500;
+  color:#8a96a8;
+  background:none;
+  border:1px solid #e2e6ea;
+  border-radius:5px;
+  padding:7px 12px;
+  cursor:pointer;
+  transition:all .12s;
+  white-space:nowrap;
+}
+.filter-reset:hover{color:#1a5c38;border-color:#1a5c38}
+.filter-info{
+  font-size:12px;color:#8a96a8;
+  margin-left:auto;
+  font-family:'IBM Plex Mono',monospace;
+}
+.filter-info span{color:#1a5c38;font-weight:500}
+
+/* filtered state */
+.filtered-note{
+  display:none;
+  font-size:11px;
+  color:#1a5c38;
+  background:#e8f3ec;
+  border:1px solid rgba(26,92,56,.2);
+  padding:4px 10px;
+  border-radius:4px;
+  font-weight:500;
+}
+
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.kpi-row{animation:up .3s .05s ease both}
+.two-col{animation:up .3s .1s ease both}
+</style>
+</head>
+<body>
+
+<div class="page-title">VDM Statistika</div>
+<div class="page-sub" id="pagesub">Geležinkelių infrastruktūros duomenys · vdm_dev.silver</div>
+
+<!-- KPI -->
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">Filtruoti pagal liniją:</span>
+  <select class="filter-select" id="lineFilter" onchange="applyFilter()">
+    <option value="all">Visos linijos — visas tinklas</option>
+    <option value="L01">L01 · Vilnius–Klaipėda (372 km)</option>
+    <option value="L02">L02 · Kaišiadorys–Kybartai–V.S.</option>
+    <option value="L03">L03 · Vilnius–Kena–V.S. (36 km)</option>
+    <option value="L04">L04 · Kazlų Rūda–Mockava–V.S.</option>
+    <option value="L05">L05 · Kužiai–Mažeikiai–Bugeniai–V.S.</option>
+    <option value="L06">L06 · Radviliškis–Pagėgiai–V.S. (148 km)</option>
+    <option value="L07">L07 · Klaipėda–Pagėgiai (84 km)</option>
+    <option value="L08">L08 · Radviliškis–Rokiškis–V.S.</option>
+    <option value="L09">L09 · Vilnius–Stasylos–V.S. (50 km)</option>
+    <option value="L10">L10 · Šiauliai–Joniškis–V.S. (60 km)</option>
+    <option value="L11">L11 · Lentvaris–Marcinkonys–V.S.</option>
+    <option value="L12">L12 · Naujoji Vilnia–Turmantas–V.S.</option>
+    <option value="L13">L13 · Kyviškės–Valčiūnai (25 km)</option>
+    <option value="L14">L14 · Radviliškis–Petrašiūnai</option>
+    <option value="L15">L15 · Senieji Trakai–Trakai (3.7 km)</option>
+    <option value="L16">L16 · Gaižiūnai–Palemonas (24 km)</option>
+    <option value="L17">L17 · Paneriai–Valčiūnai (23 km)</option>
+    <option value="L18">L18 · Šeštokai–Alytus</option>
+    <option value="L19">L19 · Švenčionėliai–Utena (47 km)</option>
+    <option value="L20">L20 · Rimkai–Draugystė (3.2 km)</option>
+    <option value="L21">L21 · Mažeikiai–V.S. (19 km)</option>
+    <option value="L22">L22 · Akmenė–Alkiškiai (11 km)</option>
+    <option value="L23">L23 · Palemonas–Rokai–Jiesia (14 km)</option>
+    <option value="L24">L24 · Kretinga–Skuodas–V.S.</option>
+    <option value="L25">L25 · Jonava–Rizgonys</option>
+  </select>
+  <button class="filter-reset" onclick="resetFilter()">✕ Išvalyti</button>
+  <span class="filter-info" id="filterInfo">Rodoma: <span>visos linijos</span></span>
+</div>
+
+<!-- FILTERED NOTE -->
+<div class="filtered-note" id="filteredNote">
+  ⚠ Statistikos duomenys yra viso tinklo — filtras rodo tik linijos atpažinimo kodą. Tiksliems linijos duomenims reikalinga papildoma SQL užklausa Databricks sistemoje.
+</div>
+
+<div style="margin-bottom:8px"><span class="sec-label">Pagrindiniai rodikliai</span></div>
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-lbl">Bendras kelių ilgis</div>
+    <div class="kpi-val">3,524<span class="kpi-unit">km</span></div>
+    <div class="kpi-note">mainTrack · sidingTrack · secondaryTrack · connectingTrack</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Infrastruktūros objektai</div>
+    <div class="kpi-val">16,984</div>
+    <div class="kpi-note">vdm_dev.silver.objects · COUNT(*)</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-lbl">Neidentifikuoti keliai</div>
+    <div class="kpi-val" style="color:#b86e1a">48.6<span class="kpi-unit" style="color:#b86e1a">km</span></div>
+    <div class="kpi-note">UNKNOWN trackType — reikia priskirti VDM</div>
+  </div>
+</div>
+
+<!-- KELIAI + OBJEKTAI -->
+<div style="margin-bottom:8px"><span class="sec-label">Kelių tinklas ir infrastruktūros objektai</span></div>
+<div class="two-col">
+
+  <!-- TRACK TYPES -->
+  <div class="card">
+    <div class="card-head">Kelių tipai pagal ilgį</div>
+    <div class="card-body">
+      <div class="track-rows">
+        <div class="tr">
+          <div class="tr-top">
+            <div><span class="tr-name">Pagrindinis kelias</span><span class="tr-code"> · mainTrack</span></div>
+            <div class="tr-right"><span class="tr-km">2,360.9 km</span><span class="tr-pct">67.0%</span></div>
+          </div>
+          <div class="tr-bg"><div class="tr-fill" style="width:100%;background:#1a5c38"></div></div>
+        </div>
+        <div class="tr">
+          <div class="tr-top">
+            <div><span class="tr-name">Šoninis kelias</span><span class="tr-code"> · sidingTrack</span></div>
+            <div class="tr-right"><span class="tr-km">646.0 km</span><span class="tr-pct">18.3%</span></div>
+          </div>
+          <div class="tr-bg"><div class="tr-fill" style="width:27.4%;background:#2d8550"></div></div>
+        </div>
+        <div class="tr">
+          <div class="tr-top">
+            <div><span class="tr-name">Antraeilis kelias</span><span class="tr-code"> · secondaryTrack</span></div>
+            <div class="tr-right"><span class="tr-km">444.3 km</span><span class="tr-pct">12.6%</span></div>
+          </div>
+          <div class="tr-bg"><div class="tr-fill" style="width:18.8%;background:#b86e1a"></div></div>
+        </div>
+        <div class="tr">
+          <div class="tr-top">
+            <div><span class="tr-name">Jungiamasis kelias</span><span class="tr-code"> · connectingTrack</span></div>
+            <div class="tr-right"><span class="tr-km">24.6 km</span><span class="tr-pct">0.7%</span></div>
+          </div>
+          <div class="tr-bg"><div class="tr-fill" style="width:1%;background:#1a5fa8"></div></div>
+        </div>
+        <div class="tr">
+          <div class="tr-top">
+            <div><span class="tr-name" style="color:#b86e1a">Neidentifikuoti ⚠</span><span class="tr-code"> · UNKNOWN</span></div>
+            <div class="tr-right"><span class="tr-km" style="color:#b86e1a">48.6 km</span><span class="tr-pct">1.4%</span></div>
+          </div>
+          <div class="tr-bg"><div class="tr-fill" style="width:2%;background:#f59e0b"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJECTS -->
+  <div class="card">
+    <div class="card-head">
+      Objektai pagal tipą
+      <span style="font-size:11px;font-weight:400;color:#8a96a8">Spaudžiate → subtipai</span>
+    </div>
+    <div class="card-body">
+      <div class="obj-rows">
+
+        <!-- SIGNAL -->
+        <div class="obj-row open" style="border-color:#16a34a" id="row-signal">
+          <div class="obj-main" onclick="toggle('row-signal')">
+            <span class="obj-expand-icon">▶</span>
+            <svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0"><circle cx="5.5" cy="5.5" r="5" fill="#16a34a"/><circle cx="5.5" cy="5.5" r="2" fill="white"/></svg>
+            <span class="obj-name">Šviesoforai <span class="obj-code">Signal · OT_2</span></span>
+            <span class="obj-count">4,071</span><span class="obj-unit">vnt.</span>
+          </div>
+          <div class="obj-subtypes">
+            <div class="sub-row"><div class="sub-dot" style="background:#15803d"></div><span class="sub-name">Manevriniai šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#15803d"></div></div><span class="sub-count">1,659</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#16a34a"></div><span class="sub-name">Išleidžiamieji šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:58%;background:#16a34a"></div></div><span class="sub-count">962</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#2d8550"></div><span class="sub-name">Tarpstočio šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:32%;background:#2d8550"></div></div><span class="sub-count">527</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#4ade80"></div><span class="sub-name">Maršrutiniai šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:23%;background:#4ade80"></div></div><span class="sub-count">386</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#4ade80"></div><span class="sub-name">Įleidžiamieji šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:19%;background:#4ade80"></div></div><span class="sub-count">310</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#86efac"></div><span class="sub-name">Įspėjamieji šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:5%;background:#86efac"></div></div><span class="sub-count">83</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#86efac"></div><span class="sub-name">Atitveriamieji šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:0.8%;background:#86efac"></div></div><span class="sub-count">13</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#bbf7d0"></div><span class="sub-name">Kalnelio šviesoforai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:0.5%;background:#bbf7d0"></div></div><span class="sub-count">9</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#bbf7d0"></div><span class="sub-name">Antriniai šviesoforai (AL, AN, AK ir kt.)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:6%;background:#bbf7d0"></div></div><span class="sub-count">97</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#d1fae5"></div><span class="sub-name">Kelrodžiai šviesoforai (R, K ir kt.)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:0.8%;background:#d1fae5"></div></div><span class="sub-count">13</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#d1fae5"></div><span class="sub-name">Kiti (NVSŽ, kombinuoti ir kt.)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:0.3%;background:#d1fae5"></div></div><span class="sub-count">12</span></div>
+          </div>
+        </div>
+
+        <!-- SWITCH -->
+        <div class="obj-row" style="border-color:#c47a1e" id="row-switch">
+          <div class="obj-main" onclick="toggle('row-switch')">
+            <span class="obj-expand-icon">▶</span>
+            <svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0"><polygon points="5.5,0.5 10.5,5.5 5.5,10.5 0.5,5.5" fill="#c47a1e"/></svg>
+            <span class="obj-name">Iešmai <span class="obj-code">Switch · OT_1</span></span>
+            <span class="obj-count">3,515</span><span class="obj-unit">vnt.</span>
+          </div>
+          <div class="obj-subtypes">
+            <div class="sub-row"><div class="sub-dot" style="background:#c47a1e"></div><span class="sub-name">Iešmai (Switch) — pagrindiniai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#c47a1e"></div></div><span class="sub-count">3,515</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#d97706"></div><span class="sub-name">Iešmo elektrinė pavara <span style="color:#b8c0cc;font-size:10px">Switch_electric_drive · OT_35</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:14%;background:#d97706"></div></div><span class="sub-count">510</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#f59e0b"></div><span class="sub-name">Iešmo padėties jutiklis <span style="color:#b8c0cc;font-size:10px">Switch_point_position_detector · OT_36</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:7%;background:#f59e0b"></div></div><span class="sub-count">247</span></div>
+          </div>
+        </div>
+
+        <!-- CABLE BOX -->
+        <div class="obj-row" style="border-color:#0891b2" id="row-cablebox">
+          <div class="obj-main" onclick="toggle('row-cablebox')">
+            <span class="obj-expand-icon">▶</span>
+            <svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0"><rect x="0.5" y="0.5" width="10" height="10" rx="2" fill="#0891b2"/></svg>
+            <span class="obj-name">Kabelinės dėžės ir movos <span class="obj-code">Cable_box · OT_23</span></span>
+            <span class="obj-count">1,064</span><span class="obj-unit">vnt.</span>
+          </div>
+          <div class="obj-subtypes">
+            <div class="sub-row"><div class="sub-dot" style="background:#0891b2"></div><span class="sub-name">Kabelinės dėžės (Cable_box)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#0891b2"></div></div><span class="sub-count">1,064</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#06b6d4"></div><span class="sub-name">Signalizacijos kabelių jungtys <span style="color:#b8c0cc;font-size:10px">OT_7</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:20%;background:#06b6d4"></div></div><span class="sub-count">138</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#67e8f9"></div><span class="sub-name">Ryšių šuliniai <span style="color:#b8c0cc;font-size:10px">Communications_well · OT_38</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:5%;background:#67e8f9"></div></div><span class="sub-count">52</span></div>
+          </div>
+        </div>
+
+        <!-- END TERMINATION (Poles) -->
+        <div class="obj-row" style="border-color:#7c3aed" id="row-pole">
+          <div class="obj-main" onclick="toggle('row-pole')">
+            <span class="obj-expand-icon">▶</span>
+            <svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0"><polygon points="5.5,0.5 10.5,10.5 0.5,10.5" fill="#7c3aed"/></svg>
+            <span class="obj-name">Stulpai ir atramos <span class="obj-code">Pole · OT_16</span></span>
+            <span class="obj-count">876</span><span class="obj-unit">vnt.</span>
+          </div>
+          <div class="obj-subtypes">
+            <div class="sub-row"><div class="sub-dot" style="background:#7c3aed"></div><span class="sub-name">Stulpai (Pole)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#7c3aed"></div></div><span class="sub-count">876</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#8b5cf6"></div><span class="sub-name">Galinė ryšių mova <span style="color:#b8c0cc;font-size:10px">End_termination · OT_9</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#8b5cf6"></div></div><span class="sub-count">975</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#a78bfa"></div><span class="sub-name">Rėlinės spintos <span style="color:#b8c0cc;font-size:10px">Relay_cabinet · OT_34</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:4%;background:#a78bfa"></div></div><span class="sub-count">38</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#c4b5fd"></div><span class="sub-name">Akumuliatorių spintos <span style="color:#b8c0cc;font-size:10px">Battery_cabinet · OT_21</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:3.5%;background:#c4b5fd"></div></div><span class="sub-count">34</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#c4b5fd"></div><span class="sub-name">Valdymo spintos <span style="color:#b8c0cc;font-size:10px">Control_cabinet · OT_15</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:3%;background:#c4b5fd"></div></div><span class="sub-count">26</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#c4b5fd"></div><span class="sub-name">Ryšių spintos <span style="color:#b8c0cc;font-size:10px">Communication_cabinet · OT_39</span></span><div class="sub-bar-bg"><div class="sub-bar" style="width:3%;background:#c4b5fd"></div></div><span class="sub-count">33</span></div>
+          </div>
+        </div>
+
+        <!-- BUFFER STOP -->
+        <div class="obj-row" style="border-color:#c0392b">
+          <div class="obj-main obj-no-expand" style="cursor:default">
+            <span class="obj-expand-icon" style="visibility:hidden">▶</span>
+            <svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0"><rect x="0.5" y="3.5" width="10" height="5" rx="1" fill="#c0392b"/></svg>
+            <span class="obj-name">Saugos smailės <span class="obj-code">Buffer stop · OT_3</span></span>
+            <span class="obj-count">567</span><span class="obj-unit">vnt.</span>
+          </div>
+        </div>
+
+        <!-- NEIDENTIFIKUOTI -->
+        <div class="obj-row" style="border-color:#cdd3da" id="row-unknown">
+          <div class="obj-main" onclick="toggle('row-unknown')">
+            <span class="obj-expand-icon">▶</span>
+            <svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0"><rect x="0.5" y="0.5" width="10" height="10" rx="1" fill="#8a96a8"/></svg>
+            <span class="obj-name">Neidentifikuoti tipai <span class="obj-code">be object_types įrašo</span></span>
+            <span class="obj-count">5,021</span><span class="obj-unit">vnt.</span>
+          </div>
+          <div class="obj-subtypes">
+            <div class="sub-row"><div class="sub-dot" style="background:#8a96a8"></div><span class="sub-name">Tipo kodas 2535</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#8a96a8"></div></div><span class="sub-count">621</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#8a96a8"></div><span class="sub-name">Tipo kodas 2722</span><div class="sub-bar-bg"><div class="sub-bar" style="width:80%;background:#9ca3af"></div></div><span class="sub-count">496</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#9ca3af"></div><span class="sub-name">Tipo kodas 3994</span><div class="sub-bar-bg"><div class="sub-bar" style="width:74%;background:#9ca3af"></div></div><span class="sub-count">459</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#9ca3af"></div><span class="sub-name">Tipo kodas 3821</span><div class="sub-bar-bg"><div class="sub-bar" style="width:65%;background:#9ca3af"></div></div><span class="sub-count">403</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#b0bac8"></div><span class="sub-name">Tipo kodas 3131</span><div class="sub-bar-bg"><div class="sub-bar" style="width:57%;background:#b0bac8"></div></div><span class="sub-count">352</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#b0bac8"></div><span class="sub-name">Tipo kodas 3182</span><div class="sub-bar-bg"><div class="sub-bar" style="width:55%;background:#b0bac8"></div></div><span class="sub-count">344</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#b0bac8"></div><span class="sub-name">Tipo kodas 2533</span><div class="sub-bar-bg"><div class="sub-bar" style="width:54%;background:#b0bac8"></div></div><span class="sub-count">333</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#cdd3da"></div><span class="sub-name">Kiti neidentifikuoti (20+ tipų)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:35%;background:#cdd3da"></div></div><span class="sub-count">~2,013</span></div>
+            <div class="sub-note">⚠ Šie tipai neturi įrašo vdm_dev.silver.object_types lentelėje — reikia papildyti</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="total-row">
+        <span>Iš viso objektų</span>
+        <span>16,984 vnt.</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- STOTYS + KOKYBĖ -->
+<div style="margin-bottom:8px"><span class="sec-label">Stotys ir duomenų kokybė</span></div>
+<div class="two-col">
+
+  <div class="card">
+    <div class="card-head">Objektų skaičius pagal stotį — top 15</div>
+    <div class="card-body">
+      <div class="sta-rows">
+        <div class="sc-row"><span class="sc-name">RDV</span><div class="sc-bg"><div class="sc-fill" style="width:100%"></div></div><span class="sc-n">563</span></div>
+        <div class="sc-row"><span class="sc-name">PNR</span><div class="sc-bg"><div class="sc-fill" style="width:69%"></div></div><span class="sc-n">390</span></div>
+        <div class="sc-row"><span class="sc-name">VLN</span><div class="sc-bg"><div class="sc-fill" style="width:66%"></div></div><span class="sc-n">369</span></div>
+        <div class="sc-row"><span class="sc-name">KLP</span><div class="sc-bg"><div class="sc-fill" style="width:60%"></div></div><span class="sc-n">339</span></div>
+        <div class="sc-row"><span class="sc-name">VAI</span><div class="sc-bg"><div class="sc-fill" style="width:57%"></div></div><span class="sc-n">321</span></div>
+        <div class="sc-row"><span class="sc-name">DRG</span><div class="sc-bg"><div class="sc-fill" style="width:50%"></div></div><span class="sc-n">279</span></div>
+        <div class="sc-row"><span class="sc-name">PLM</span><div class="sc-bg"><div class="sc-fill" style="width:48%"></div></div><span class="sc-n">270</span></div>
+        <div class="sc-row"><span class="sc-name">KNS</span><div class="sc-bg"><div class="sc-fill" style="width:44%"></div></div><span class="sc-n">248</span></div>
+        <div class="sc-row"><span class="sc-name">KEN</span><div class="sc-bg"><div class="sc-fill" style="width:42%"></div></div><span class="sc-n">239</span></div>
+        <div class="sc-row"><span class="sc-name">BUG</span><div class="sc-bg"><div class="sc-fill" style="width:30%;background:#2d8550"></div></div><span class="sc-n">168</span></div>
+        <div class="sc-row"><span class="sc-name">NVL</span><div class="sc-bg"><div class="sc-fill" style="width:29%;background:#2d8550"></div></div><span class="sc-n">163</span></div>
+        <div class="sc-row"><span class="sc-name">SAU</span><div class="sc-bg"><div class="sc-fill" style="width:28%;background:#2d8550"></div></div><span class="sc-n">157</span></div>
+        <div class="sc-row"><span class="sc-name">KYB</span><div class="sc-bg"><div class="sc-fill" style="width:26%;background:#2d8550"></div></div><span class="sc-n">146</span></div>
+        <div class="sc-row"><span class="sc-name">LNT</span><div class="sc-bg"><div class="sc-fill" style="width:24%;background:#2d8550"></div></div><span class="sc-n">133</span></div>
+        <div class="sc-row"><span class="sc-name">GAI</span><div class="sc-bg"><div class="sc-fill" style="width:22%;background:#2d8550"></div></div><span class="sc-n">122</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">Duomenų kokybė</div>
+    <div class="card-body">
+      <table class="dq-table">
+        <tr><td class="dq-key">Bendras kelių ilgis</td><td class="dq-val ok">3,524.4 km</td></tr>
+        <tr><td class="dq-key">mainTrack</td><td class="dq-val ok">2,360.9 km</td></tr>
+        <tr><td class="dq-key">sidingTrack</td><td class="dq-val ok">646.0 km</td></tr>
+        <tr><td class="dq-key">secondaryTrack</td><td class="dq-val ok">444.3 km</td></tr>
+        <tr><td class="dq-key">connectingTrack</td><td class="dq-val ok">24.6 km</td></tr>
+        <tr><td class="dq-key">UNKNOWN trackType ⚠</td><td class="dq-val warn">48.6 km</td></tr>
+        <tr><td class="dq-key">Objektai iš viso</td><td class="dq-val ok">16,984</td></tr>
+        <tr><td class="dq-key">Be object_types įrašo ⚠</td><td class="dq-val warn">5,021 obj.</td></tr>
+        <tr><td class="dq-key">posStation užpildyta</td><td class="dq-val err">0 / 16,984</td></tr>
+      </table>
+      <div class="alert-box">
+        ⚠ 5,021 objektai turi tipus kurie neįtraukti į object_types lentelę (pvz. 2535, 2722, 3994...) — rekomenduojama papildyti VDM.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  LTG Infra · InfraMap · Šaltinis: vdm_dev.silver.tracks · vdm_dev.silver.objects · vdm_dev.silver.object_types
+</div>
+
+<script>
+function toggle(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+
+// Line data for filter
+const lineData = {
+  'L01': { name: 'Vilnius–Klaipėda', km: 372.5, tracks: 2410 },
+  'L02': { name: 'Kaišiadorys–Kybartai–V.S.', km: null, tracks: 738 },
+  'L03': { name: 'Vilnius–Kena–V.S.', km: 36.0, tracks: 284 },
+  'L04': { name: 'Kazlų Rūda–Mockava–V.S.', km: null, tracks: 185 },
+  'L05': { name: 'Kužiai–Mažeikiai–Bugeniai–V.S.', km: null, tracks: 275 },
+  'L06': { name: 'Radviliškis–Pagėgiai–V.S.', km: 147.7, tracks: 131 },
+  'L07': { name: 'Klaipėda–Pagėgiai', km: 83.9, tracks: 127 },
+  'L08': { name: 'Radviliškis–Rokiškis–V.S.', km: null, tracks: 238 },
+  'L09': { name: 'Vilnius–Stasylos–V.S.', km: 49.8, tracks: 132 },
+  'L10': { name: 'Šiauliai–Joniškis–V.S.', km: 59.5, tracks: 102 },
+  'L11': { name: 'Lentvaris–Marcinkonys–V.S.', km: null, tracks: 133 },
+  'L12': { name: 'Naujoji Vilnia–Turmantas–V.S.', km: null, tracks: 193 },
+  'L13': { name: 'Kyviškės–Valčiūnai', km: 24.9, tracks: 2 },
+  'L14': { name: 'Radviliškis–Petrašiūnai', km: null, tracks: 43 },
+  'L15': { name: 'Senieji Trakai–Trakai', km: 3.7, tracks: 2 },
+  'L16': { name: 'Gaižiūnai–Palemonas', km: 24.4, tracks: 17 },
+  'L17': { name: 'Paneriai–Valčiūnai', km: 23.5, tracks: 255 },
+  'L18': { name: 'Šeštokai–Alytus', km: null, tracks: 34 },
+  'L19': { name: 'Švenčionėliai–Utena', km: 47.3, tracks: 44 },
+  'L20': { name: 'Rimkai–Draugystė', km: 3.2, tracks: 239 },
+  'L21': { name: 'Mažeikiai–V.S.', km: 18.9, tracks: 1 },
+  'L22': { name: 'Akmenė–Alkiškiai', km: 11.4, tracks: 24 },
+  'L23': { name: 'Palemonas–Rokai–Jiesia', km: 14.3, tracks: 8 },
+  'L24': { name: 'Kretinga–Skuodas–V.S.', km: null, tracks: 27 },
+  'L25': { name: 'Jonava–Rizgonys', km: null, tracks: 17 },
+};
+
+function applyFilter() {
+  const val = document.getElementById('lineFilter').value;
+  const info = document.getElementById('filterInfo');
+  const note = document.getElementById('filteredNote');
+
+  if (val === 'all') {
+    resetFilter();
+    return;
+  }
+
+  const line = lineData[val];
+  if (!line) return;
+
+  // Update filter info
+  info.innerHTML = 'Rodoma: <span>' + val + ' · ' + line.name + '</span>';
+  note.style.display = 'block';
+
+  // Update KPI - tracks count for this line
+  const kpiVals = document.querySelectorAll('.kpi-val');
+  // highlight page title
+  document.getElementById('pagesub').textContent =
+    'Geležinkelių infrastruktūros duomenys · ' + val + ' · ' + line.name;
+
+  // Update first KPI with line km if available
+  if (line.km) {
+    kpiVals[0].innerHTML = line.km.toFixed(1) + '<span class="kpi-unit">km</span>';
+    document.querySelectorAll('.kpi-note')[0].textContent = 
+      'Linijos ' + val + ' ilgis · ' + line.tracks + ' bėgių atkarpos';
+  } else {
+    kpiVals[0].innerHTML = '–<span class="kpi-unit">km</span>';
+    document.querySelectorAll('.kpi-note')[0].textContent = 
+      'Linijos ' + val + ' ilgis dar nenurodytas VDM · ' + line.tracks + ' atkarpos';
+  }
+}
+
+function resetFilter() {
+  document.getElementById('lineFilter').value = 'all';
+  document.getElementById('filterInfo').innerHTML = 'Rodoma: <span>visos linijos</span>';
+  document.getElementById('filteredNote').style.display = 'none';
+
+  // Restore KPI
+  document.querySelectorAll('.kpi-val')[0].innerHTML = '3,524<span class="kpi-unit">km</span>';
+  document.querySelectorAll('.kpi-note')[0].textContent = 
+    'mainTrack · sidingTrack · secondaryTrack · connectingTrack';
+
+  // Restore date in subtitle
+  const n = new Date();
+  const pad = x => String(x).padStart(2,'0');
+  document.getElementById('pagesub').textContent =
+    'Geležinkelių infrastruktūros duomenys · vdm_dev.silver · ' +
+    n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate())+
+    ' '+pad(n.getHours())+':'+pad(n.getMinutes());
+}
+
+const n = new Date();
+const pad = x => String(x).padStart(2,'0');
+document.getElementById('pagesub').textContent =
+  'Geležinkelių infrastruktūros duomenys · vdm_dev.silver · ' +
+  n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate())+
+  ' '+pad(n.getHours())+':'+pad(n.getMinutes());
+</script>
+</body>
+</html>
