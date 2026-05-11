@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VDM Statistika</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1a5c38;--green-light:#2d7a50;--green-pale:#e8f3ec;
+  --amber:#f59e0b;--red:#ef4444;--blue:#1a5fa8;
+  --bg:#f4f6f4;--surface:white;--border:#e2e6ea;
+  --text:#1a2330;--muted:#8a96a8;--subtle:#f9fafb;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.page-hdr{background:var(--green);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.page-hdr-left{display:flex;align-items:center;gap:12px}
+.logo{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:white;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:3px 9px;border-radius:3px;letter-spacing:.5px}
+.page-title{font-size:15px;font-weight:600;color:white}
+.page-meta{font-size:10px;color:rgba(255,255,255,.55);font-family:'DM Mono',monospace;margin-top:2px}
+.filter-wrap{display:flex;align-items:center;gap:8px}
+.filter-label{font-size:11px;color:rgba(255,255,255,.6)}
+.filter-select{font-size:12px;padding:5px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px;background:rgba(255,255,255,.1);color:white;outline:none;cursor:pointer}
+.filter-select option{background:#1a5c38}
+
+.main{padding:18px 22px;display:grid;gap:14px}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi-card{background:var(--surface);border-radius:10px;border:0.5px solid var(--border);padding:16px 18px;border-left:3px solid;transition:transform .15s,box-shadow .15s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.06)}
+.kpi-val{font-family:'DM Mono',monospace;font-size:30px;font-weight:300;line-height:1;letter-spacing:-1px}
+.kpi-val span{font-size:13px;font-weight:400;color:var(--muted);margin-left:3px;font-family:'DM Sans',sans-serif}
+.kpi-lbl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.section-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* CARD */
+.card{background:var(--surface);border-radius:10px;border:0.5px solid var(--border);overflow:hidden}
+.card-hdr{padding:11px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.card-hdr:hover{background:var(--subtle)}
+.card-title{font-size:11px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.5px}
+.card-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--green-pale);color:var(--green)}
+.card-toggle{font-size:11px;color:var(--muted);transition:transform .2s;margin-left:8px}
+.card-toggle.open{transform:rotate(180deg)}
+.card-body{padding:14px 16px}
+.collapsible{overflow:hidden;transition:max-height .3s ease,opacity .3s ease;max-height:2000px;opacity:1}
+.collapsible.collapsed{max-height:0;opacity:0}
+
+/* TRACK BARS */
+.track-item{margin-bottom:11px}
+.track-item:last-child{margin-bottom:0}
+.track-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.track-name{font-size:12px;font-weight:500}
+.track-km{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+.track-bar-bg{height:5px;background:#f0f2f5;border-radius:3px;overflow:hidden}
+.track-bar{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.track-pct{font-size:10px;color:var(--muted);margin-top:2px;text-align:right}
+
+/* OBJ ROWS */
+.obj-row{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:0.5px solid #f5f6f7}
+.obj-row:last-child{border-bottom:none}
+.obj-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.obj-name{flex:1;font-size:12px}
+.obj-sub{font-size:10px;color:var(--muted)}
+.obj-count{font-family:'DM Mono',monospace;font-size:12px;font-weight:500}
+.obj-bar-wrap{width:55px}
+.obj-bar-bg{height:4px;background:#f0f2f5;border-radius:2px}
+.obj-bar{height:100%;border-radius:2px;transition:width 1s .2s cubic-bezier(.4,0,.2,1)}
+
+/* SUB ROWS */
+.sub-section{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border)}
+.sub-section-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.sub-row{display:flex;align-items:center;gap:8px;padding:3px 0}
+.sub-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sub-name{flex:1;font-size:11px}
+.sub-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);min-width:36px;text-align:right}
+.sub-bar-bg{width:50px;height:3px;background:#f0f2f5;border-radius:2px}
+.sub-bar{height:100%;border-radius:2px;transition:width 1s .4s cubic-bezier(.4,0,.2,1)}
+
+/* CAT GRID */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cat-item{background:var(--subtle);border-radius:8px;padding:9px 11px;border:0.5px solid var(--border)}
+.cat-name{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.cat-stats{display:flex;gap:4px;margin-bottom:7px}
+.cat-stat{flex:1;text-align:center}
+.cat-stat-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:400;line-height:1}
+.cat-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+.cat-bar-wrap{height:4px;background:#e2e6ea;border-radius:3px;overflow:hidden;display:flex}
+.cat-bar-done{height:100%;background:var(--green);transition:width 1s .4s}
+.cat-bar-wip{height:100%;background:var(--amber);transition:width 1s .5s}
+
+/* PIE */
+.pie-wrap{display:flex;align-items:center;gap:14px;padding:2px 0}
+.pie-legend{display:flex;flex-direction:column;gap:5px;flex:1}
+.pie-leg-row{display:flex;align-items:center;gap:7px;font-size:11px}
+.pie-leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.pie-leg-name{flex:1}
+.pie-leg-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* DQ */
+.dq-table{width:100%;border-collapse:collapse}
+.dq-table th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;padding:5px 10px;border-bottom:1px solid var(--border);text-align:left}
+.dq-table td{padding:6px 10px;border-bottom:0.5px solid #f5f6f7;font-size:11px}
+.dq-table tr:last-child td{border-bottom:none}
+.dq-ok{color:var(--green);font-weight:600;font-family:'DM Mono',monospace}
+.dq-warn{color:var(--amber);font-weight:600;font-family:'DM Mono',monospace}
+.dq-label{font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;letter-spacing:.3px}
+.dq-label.ok{background:var(--green-pale);color:var(--green)}
+.dq-label.warn{background:#fef3c7;color:#b45309}
+
+.footer{padding:12px 22px;border-top:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface)}
+.footer-txt{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.kpi-card{animation:fadeUp .35s ease both}
+.kpi-card:nth-child(1){animation-delay:.04s}
+.kpi-card:nth-child(2){animation-delay:.08s}
+.kpi-card:nth-child(3){animation-delay:.12s}
+.kpi-card:nth-child(4){animation-delay:.16s}
+.card{animation:fadeUp .4s ease both;animation-delay:.2s}
+</style>
+</head>
+<body>
+
+<div class="page-hdr">
+  <div class="page-hdr-left">
+    <div class="logo">LTG</div>
+    <div>
+      <div class="page-title">VDM Statistika</div>
+      <div class="page-meta" id="pagesub">Geležinkelių infrastruktūros duomenys · vdm_dev.silver</div>
+    </div>
+  </div>
+  <div class="filter-wrap">
+    <span class="filter-label">Linija:</span>
+    <select class="filter-select" id="lineFilter" onchange="applyFilter()">
+      <option value="ALL">Visos linijos — visas tinklas</option>
+      <option value="L01">L01 · Vilnius–Klaipėda</option>
+      <option value="L02">L02 · Kaišiadorys–Kybartai–V.S.</option>
+      <option value="L03">L03 · Vilnius–Kena–V.S.</option>
+      <option value="L04">L04 · Kazlų Rūda–Mockava–V.S.</option>
+      <option value="L05">L05 · Kužiai–Mažeikiai–Bugeniai–V.S.</option>
+      <option value="L06">L06 · Radviliškis–Pagėgiai–V.S.</option>
+      <option value="L07">L07 · Klaipėda–Pagėgiai</option>
+      <option value="L08">L08 · Radviliškis–Rokiškis–V.S.</option>
+      <option value="L09">L09 · Vilnius–Stasylos–V.S.</option>
+      <option value="L10">L10 · Šiauliai–Joniškis–V.S.</option>
+      <option value="L11">L11 · Lentvaris–Marcinkonys–V.S.</option>
+      <option value="L12">L12 · Naujoji Vilnia–Turmantas–V.S.</option>
+      <option value="L13">L13 · Kyviškės–Valčiūnai</option>
+      <option value="L14">L14 · Radviliškis–Petrašiūnai</option>
+      <option value="L15">L15 · Senieji Trakai–Trakai</option>
+      <option value="L16">L16 · Gaižiūnai–Palemonas</option>
+      <option value="L17">L17 · Paneriai–Valčiūnai</option>
+      <option value="L18">L18 · Šeštokai–Alytus</option>
+      <option value="L19">L19 · Švenčionėliai–Utena</option>
+      <option value="L20">L20 · Rimkai–Draugystė</option>
+      <option value="L21">L21 · Mažeikiai–V.S.</option>
+      <option value="L22">L22 · Akmenė–Alkiškiai</option>
+      <option value="L23">L23 · Palemonas–Rokai–Jiesia</option>
+      <option value="L24">L24 · Kretinga–Skuodas–V.S.</option>
+      <option value="L25">L25 · Jonava–Rizgonys</option>
+    </select>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card" style="border-color:var(--green)">
+      <div class="kpi-val" id="kpi-km">3,524<span>km</span></div>
+      <div class="kpi-lbl">Bendras bėgių ilgis</div>
+      <div class="kpi-sub">5 tipų atkarpos</div>
+    </div>
+    <div class="kpi-card" style="border-color:var(--amber)">
+      <div class="kpi-val" id="kpi-atk">4,378<span>km</span></div>
+      <div class="kpi-lbl">Kontaktinis tinklas</div>
+      <div class="kpi-sub">Elektros tiekimo linijos</div>
+    </div>
+    <div class="kpi-card" style="border-color:var(--blue)">
+      <div class="kpi-val" id="kpi-sw">3,515<span>vnt</span></div>
+      <div class="kpi-lbl">Iešmai</div>
+      <div class="kpi-sub">OT_1 · 3 subtipai</div>
+    </div>
+    <div class="kpi-card" style="border-color:#64748b">
+      <div class="kpi-val" id="kpi-sig">4,071<span>vnt</span></div>
+      <div class="kpi-lbl">Šviesoforai</div>
+      <div class="kpi-sub">OT_2 · 8 tipai</div>
+    </div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="section-grid">
+
+    <!-- KELIAI -->
+    <div class="card">
+      <div class="card-hdr" onclick="toggle('tracks')">
+        <span class="card-title">Kelių tipai</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge" id="card-badge-km">3,524 km</span>
+          <span class="card-toggle open" id="toggle-tracks">▼</span>
+        </div>
+      </div>
+      <div class="collapsible" id="tracks">
+        <div class="card-body">
+          <div class="track-item">
+            <div class="track-top"><span class="track-name">Pagrindiniai keliai</span><span class="track-km">2,360.9 km</span></div>
+            <div class="track-bar-bg"><div class="track-bar" style="width:67%;background:var(--green)"></div></div>
+            <div class="track-pct">67.0% · mainTrack · tarpstočių keliai</div>
+          </div>
+          <div class="track-item">
+            <div class="track-top"><span class="track-name">Stoties keliai</span><span class="track-km">646.0 km</span></div>
+            <div class="track-bar-bg"><div class="track-bar" style="width:18.3%;background:#2d7a50"></div></div>
+            <div class="track-pct">18.3% · sidingTrack · atšakos stočiose</div>
+          </div>
+          <div class="track-item">
+            <div class="track-top"><span class="track-name">Antriniai / privažiavimo keliai</span><span class="track-km">444.3 km</span></div>
+            <div class="track-bar-bg"><div class="track-bar" style="width:12.6%;background:#3d9966"></div></div>
+            <div class="track-pct">12.6% · secondaryTrack</div>
+          </div>
+          <div class="track-item">
+            <div class="track-top"><span class="track-name">Jungiamieji keliai</span><span class="track-km">24.6 km</span></div>
+            <div class="track-bar-bg"><div class="track-bar" style="width:0.7%;background:var(--amber)"></div></div>
+            <div class="track-pct">0.7% · connectingTrack</div>
+          </div>
+          <div class="track-item">
+            <div class="track-top"><span class="track-name">Neklasifikuoti</span><span class="track-km">48.6 km</span></div>
+            <div class="track-bar-bg"><div class="track-bar" style="width:1.4%;background:var(--muted)"></div></div>
+            <div class="track-pct">1.4% · null trackType</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OBJEKTAI -->
+    <div class="card">
+      <div class="card-hdr" onclick="toggle('objects')">
+        <span class="card-title">Infrastruktūros objektai</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge">16,986 vnt</span>
+          <span class="card-toggle open" id="toggle-objects">▼</span>
+        </div>
+      </div>
+      <div class="collapsible" id="objects">
+        <div class="card-body">
+          <div class="obj-row">
+            <div class="obj-dot" style="background:var(--green)"></div>
+            <div style="flex:1"><div class="obj-name">Šviesoforai</div><div class="obj-sub">OT_2</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:100%;background:var(--green)"></div></div></div>
+            <div class="obj-count">4,071</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:#2d7a50"></div>
+            <div style="flex:1"><div class="obj-name">Iešmai</div><div class="obj-sub">OT_1</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:86%;background:#2d7a50"></div></div></div>
+            <div class="obj-count">3,515</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:var(--blue)"></div>
+            <div style="flex:1"><div class="obj-name">Kabelių mazgai</div><div class="obj-sub">OT_23</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:26%;background:var(--blue)"></div></div></div>
+            <div class="obj-count">1,064</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:#7c3aed"></div>
+            <div style="flex:1"><div class="obj-name">Galinės movos</div><div class="obj-sub">OT_9</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:24%;background:#7c3aed"></div></div></div>
+            <div class="obj-count">975</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:var(--amber)"></div>
+            <div style="flex:1"><div class="obj-name">Kontaktinių lynų atramos</div><div class="obj-sub">OT_16</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:22%;background:var(--amber)"></div></div></div>
+            <div class="obj-count">876</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:#f97316"></div>
+            <div style="flex:1"><div class="obj-name">Atmuša / buferinės atramos</div><div class="obj-sub">OT_3</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:14%;background:#f97316"></div></div></div>
+            <div class="obj-count">567</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:#ef4444"></div>
+            <div style="flex:1"><div class="obj-name">Elektrinės pavaros</div><div class="obj-sub">OT_35</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:13%;background:#ef4444"></div></div></div>
+            <div class="obj-count">510</div>
+          </div>
+          <div class="obj-row">
+            <div class="obj-dot" style="background:#8b5cf6"></div>
+            <div style="flex:1"><div class="obj-name">Padėties jutikliai</div><div class="obj-sub">OT_36</div></div>
+            <div class="obj-bar-wrap"><div class="obj-bar-bg"><div class="obj-bar" style="width:6%;background:#8b5cf6"></div></div></div>
+            <div class="obj-count">247</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3 -->
+  <div class="section-grid">
+
+    <!-- IEŠMAI -->
+    <div class="card">
+      <div class="card-hdr" onclick="toggle('switches')">
+        <span class="card-title">Iešmai ir susijusi įranga</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge">3,515 vnt</span>
+          <span class="card-toggle open" id="toggle-switches">▼</span>
+        </div>
+      </div>
+      <div class="collapsible" id="switches">
+        <div class="card-body">
+          <div class="pie-wrap">
+            <svg width="88" height="88" viewBox="0 0 88 88">
+              <circle cx="44" cy="44" r="34" fill="none" stroke="#e2e6ea" stroke-width="15"/>
+              <circle cx="44" cy="44" r="34" fill="none" stroke="var(--green)" stroke-width="15"
+                stroke-dasharray="261 152" stroke-dashoffset="0" transform="rotate(-90 44 44)"/>
+              <circle cx="44" cy="44" r="34" fill="none" stroke="var(--blue)" stroke-width="15"
+                stroke-dasharray="80 333" stroke-dashoffset="-261" transform="rotate(-90 44 44)"/>
+              <circle cx="44" cy="44" r="34" fill="none" stroke="var(--amber)" stroke-width="15"
+                stroke-dasharray="1 412" stroke-dashoffset="-341" transform="rotate(-90 44 44)"/>
+              <text x="44" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text)" font-family="DM Mono">3,515</text>
+              <text x="44" y="53" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="DM Sans">vnt</text>
+            </svg>
+            <div class="pie-legend">
+              <div class="pie-leg-row"><div class="pie-leg-dot" style="background:var(--green)"></div><span class="pie-leg-name">Kiti iešmai (linijos ir kt.)</span><span class="pie-leg-val">2,598</span></div>
+              <div class="pie-leg-row"><div class="pie-leg-dot" style="background:var(--blue)"></div><span class="pie-leg-name">Stoties iešmai (K serija)</span><span class="pie-leg-val">798</span></div>
+              <div class="pie-leg-row"><div class="pie-leg-dot" style="background:var(--amber)"></div><span class="pie-leg-name">Pereinamieji (P serija)</span><span class="pie-leg-val">1</span></div>
+            </div>
+          </div>
+          <div class="sub-section">
+            <div class="sub-section-title">Susijusi įranga</div>
+            <div class="sub-row"><div class="sub-dot" style="background:#f97316"></div><span class="sub-name">Atmuša / buferinės atramos OT_3</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#f97316"></div></div><span class="sub-count">567</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#ef4444"></div><span class="sub-name">Elektrinės pavaros OT_35</span><div class="sub-bar-bg"><div class="sub-bar" style="width:90%;background:#ef4444"></div></div><span class="sub-count">510</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#8b5cf6"></div><span class="sub-name">Padėties jutikliai OT_36</span><div class="sub-bar-bg"><div class="sub-bar" style="width:44%;background:#8b5cf6"></div></div><span class="sub-count">247</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#0ea5e9"></div><span class="sub-name">Saugos smailės OT_1 SS serija</span><div class="sub-bar-bg"><div class="sub-bar" style="width:13%;background:#0ea5e9"></div></div><span class="sub-count">72</span></div>
+            <div class="sub-row"><div class="sub-dot" style="background:#64748b"></div><span class="sub-name">Galinės movos OT_9</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:#64748b"></div></div><span class="sub-count">975</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ŠVIESOFORAI -->
+    <div class="card">
+      <div class="card-hdr" onclick="toggle('signals')">
+        <span class="card-title">Šviesoforų tipai</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge">4,071 vnt</span>
+          <span class="card-toggle open" id="toggle-signals">▼</span>
+        </div>
+      </div>
+      <div class="collapsible" id="signals">
+        <div class="card-body">
+          <div class="sub-row"><div class="sub-dot" style="background:var(--green)"></div><span class="sub-name">Manevriniai</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:100%;background:var(--green)"></div></div><span class="sub-count">1,659</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:#2d7a50"></div><span class="sub-name">Išleidžiamieji</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:58%;background:#2d7a50"></div></div><span class="sub-count">962</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:#3d9966"></div><span class="sub-name">Tarpstočio</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:32%;background:#3d9966"></div></div><span class="sub-count">527</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:var(--blue)"></div><span class="sub-name">Maršrutiniai</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:23%;background:var(--blue)"></div></div><span class="sub-count">386</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:#1a5fa8"></div><span class="sub-name">Įleidžiamieji</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:19%;background:#1a5fa8"></div></div><span class="sub-count">310</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:var(--amber)"></div><span class="sub-name">Įspėjamieji</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:5%;background:var(--amber)"></div></div><span class="sub-count">83</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:#f97316"></div><span class="sub-name">Atitveriamieji</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:1%;background:#f97316"></div></div><span class="sub-count">13</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:#ef4444"></div><span class="sub-name">Kalnelio</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:1%;background:#ef4444"></div></div><span class="sub-count">9</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:var(--muted)"></div><span class="sub-name">Antriniai (AL, AN, AK ir kt.)</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:6%;background:var(--muted)"></div></div><span class="sub-count">97</span></div>
+          <div class="sub-row"><div class="sub-dot" style="background:#cbd5e1"></div><span class="sub-name">Kelrodžiai / Kiti</span><div class="sub-bar-bg" style="width:70px"><div class="sub-bar" style="width:2%;background:#cbd5e1"></div></div><span class="sub-count">25</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: SKAITMENIZACIJA + DQ -->
+  <div class="section-grid">
+
+    <!-- SKAITMENIZACIJA -->
+    <div class="card">
+      <div class="card-hdr" onclick="toggle('digitization')">
+        <span class="card-title">Skaitmenizacijos progresas</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge">111 stočių · 127 tarpstočių</span>
+          <span class="card-toggle open" id="toggle-digitization">▼</span>
+        </div>
+      </div>
+      <div class="collapsible" id="digitization">
+        <div class="card-body">
+
+          <div class="sub-section-title" style="margin-bottom:10px">Stotys</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+
+            <div class="cat-item">
+              <div class="cat-name">GEOD</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">8</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">14</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">89</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:7%"></div><div class="cat-bar-wip" style="width:13%"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-name">DWG</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">2</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">3</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">106</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:2%"></div><div class="cat-bar-wip" style="width:3%"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-name">ORTO</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">10</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">6</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">95</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:9%"></div><div class="cat-bar-wip" style="width:5%"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-name">SAP</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">17</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">16</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">78</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:15%"></div><div class="cat-bar-wip" style="width:14%"></div></div>
+            </div>
+
+          </div>
+
+          <div class="sub-section-title" style="margin-bottom:10px">Tarpstočiai</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+
+            <div class="cat-item">
+              <div class="cat-name">DWG</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">0</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">0</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">127</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:0%"></div><div class="cat-bar-wip" style="width:0%"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-name">ORTO</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">0</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">1</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">126</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:0%"></div><div class="cat-bar-wip" style="width:1%"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-name">SAP</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">0</div><div class="cat-stat-lbl">Baigta</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--amber)">1</div><div class="cat-stat-lbl">Vykdoma</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--red)">126</div><div class="cat-stat-lbl">Atidėta</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:0%"></div><div class="cat-bar-wip" style="width:1%"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-name">Kelių tipai</div>
+              <div class="cat-stats">
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--green)">74</div><div class="cat-stat-lbl">Dvikelis</div></div>
+                <div class="cat-stat"><div class="cat-stat-val" style="color:var(--muted)">53</div><div class="cat-stat-lbl">Vienkelis</div></div>
+              </div>
+              <div class="cat-bar-wrap"><div class="cat-bar-done" style="width:58%"></div><div class="cat-bar-wip" style="width:42%;background:#e2e6ea"></div></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DQ -->
+    <div class="card">
+      <div class="card-hdr" onclick="toggle('dq')">
+        <span class="card-title">Duomenų kokybė</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="card-badge">vdm_dev.silver</span>
+          <span class="card-toggle open" id="toggle-dq">▼</span>
+        </div>
+      </div>
+      <div class="collapsible" id="dq">
+        <div class="card-body" style="padding:6px 0">
+          <table class="dq-table">
+            <thead><tr><th>Sluoksnis</th><th>Reikšmė</th><th>Būsena</th></tr></thead>
+            <tbody>
+              <tr><td>mainTrack</td><td class="dq-ok">2,360.9 km</td><td><span class="dq-label ok">OK</span></td></tr>
+              <tr><td>sidingTrack</td><td class="dq-ok">646.0 km</td><td><span class="dq-label ok">OK</span></td></tr>
+              <tr><td>secondaryTrack</td><td class="dq-ok">444.3 km</td><td><span class="dq-label ok">OK</span></td></tr>
+              <tr><td>connectingTrack</td><td class="dq-ok">24.6 km</td><td><span class="dq-label ok">OK</span></td></tr>
+              <tr><td>null trackType</td><td class="dq-warn">48.6 km</td><td><span class="dq-label warn">Tikrinti</span></td></tr>
+              <tr><td>OT_1 iešmai</td><td class="dq-ok">3,515 vnt</td><td><span class="dq-label ok">OK</span></td></tr>
+              <tr><td>OT_2 šviesoforai</td><td class="dq-ok">4,071 vnt</td><td><span class="dq-label ok">OK</span></td></tr>
+              <tr><td>Tipai 2535/2722/3994</td><td class="dq-warn">1,576 vnt</td><td><span class="dq-label warn">Neklasif.</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
