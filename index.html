@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GITS · Kelių ūkio duomenų bazė — statistika</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --panel-2:#f6f8fa; --panel-3:#eaeef2;
+  --border:#dde3ea; --border-soft:#e8ecf1;
+  --text:#182333; --muted:#6b7789; --dim:#9aa5b3;
+  --green:#1a8a54; --green-soft:#e6f4ec;
+  --amber:#c9820f; --amber-soft:#fdf1dd;
+  --red:#d3453f; --red-soft:#fbe9e8;
+  --blue:#2f6fe0; --blue-soft:#eaf1fd;
+  --teal:#0d9d95; --purple:#7c5cd8; --grey:#6b7789;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* ===== TOPBAR ===== */
+.topbar{background:#ffffff;border-bottom:1px solid var(--border);box-shadow:0 1px 3px rgba(20,30,50,.04);
+  padding:12px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.brand-tag{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.2px;
+  color:var(--green);background:var(--green-soft);border:1px solid #bfe4cd;padding:5px 10px;border-radius:4px}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:10.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:2px;letter-spacing:.2px}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filter-group{display:flex;align-items:center;gap:7px}
+.filter-group label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.filter-select{font-size:12.5px;padding:6px 11px;border:1px solid var(--border);border-radius:6px;
+  background:var(--panel-2);color:var(--text);outline:none;cursor:pointer}
+.filter-select option{background:#ffffff}
+.topbar-badge{font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-radius:5px;
+  padding:5px 9px;font-family:'IBM Plex Mono',monospace}
+.topbar-badge b{color:var(--text);font-weight:500}
+.live-wrap{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(47,174,106,.18)}
+
+/* ===== LAYOUT ===== */
+.main{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.hero-grid{display:grid;grid-template-columns:230px 1fr 1.35fr;gap:14px;align-items:stretch}
+@media(max-width:1100px){.hero-grid{grid-template-columns:1fr}}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.panel-hdr{padding:10px 14px;border-bottom:1px solid var(--border-soft);display:flex;align-items:baseline;gap:8px;background:var(--panel-2)}
+.panel-hdr-title{font-size:11.5px;font-weight:700;letter-spacing:.4px;color:var(--text)}
+.panel-hdr-note{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.panel-body{padding:14px}
+
+/* ===== KPI COLUMN ===== */
+.col-kpi{display:flex;flex-direction:column;gap:10px}
+.kpi-card{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--green);
+  border-radius:9px;padding:14px 15px;flex:1;display:flex;flex-direction:column;justify-content:center}
+.kpi-card.blue{border-left-color:var(--blue)}
+.kpi-card.grey{border-left-color:var(--grey)}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;line-height:1;letter-spacing:-.5px;color:var(--text)}
+.kpi-val .unit{font-size:12px;font-weight:400;color:var(--muted);margin-left:4px;font-family:'IBM Plex Sans',sans-serif}
+.kpi-lbl{font-size:12px;font-weight:600;color:var(--text);margin-top:7px}
+.kpi-code{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:3px}
+.kpi-dual{display:flex;gap:14px}
+.kpi-dual > div{flex:1}
+.kpi-dual .kpi-val{font-size:24px}
+
+/* ===== HORIZONTAL BAR (tracks) ===== */
+.hbar-item{margin-bottom:12px}
+.hbar-item:last-child{margin-bottom:0}
+.hbar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.hbar-name{font-size:12.5px;font-weight:500;color:var(--text)}
+.hbar-code{font-size:9.5px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-left:6px}
+.hbar-km{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)}
+.hbar-track{height:9px;background:var(--panel-3);border-radius:3px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* ===== GROUPED BAR CHART (digitizavimas) ===== */
+.gbar-wrap{display:flex;align-items:flex-end;gap:18px;height:150px;padding:4px 4px 0}
+.gbar-col{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+.gbar-stack{width:100%;max-width:44px;display:flex;flex-direction:column-reverse;height:118px;
+  background:var(--panel-3);border-radius:4px 4px 0 0;overflow:hidden}
+.gbar-seg{width:100%}
+.gbar-label{font-size:10.5px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.gbar-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.gbar-leg-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--muted)}
+.gbar-leg-dot{width:8px;height:8px;border-radius:2px}
+
+/* ===== MAP PANEL ===== */
+.col-map{position:relative}
+
+/* ===== TAXONOMY (klasifikavimo schema) ===== */
+.taxonomy{padding:18px 16px;text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center}
+.tax-root{display:inline-block;background:var(--green-soft);color:var(--green);border:1px solid #bfe4cd;
+  border-radius:8px;padding:10px 20px;font-weight:700;font-size:13px;margin:0 auto}
+.tax-root .tax-code{display:block;font-weight:400;font-size:10px;color:var(--muted);margin-top:3px;
+  font-family:'IBM Plex Mono',monospace;letter-spacing:.2px}
+.tax-vline{width:1px;height:18px;background:var(--border);margin:0 auto}
+.tax-cols{display:flex;gap:16px;position:relative;border-top:1px solid var(--border);padding-top:18px;text-align:left}
+.tax-col{flex:1;position:relative;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tax-col::before{content:'';position:absolute;top:-18px;left:50%;width:1px;height:18px;background:var(--border);transform:translateX(-50%)}
+.tax-node.cat{background:var(--blue-soft);color:var(--blue);border:1px solid #cfe0fb;border-radius:7px;
+  padding:8px 10px;font-size:11.5px;font-weight:700;text-align:center}
+.tax-leaf{background:var(--panel-2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;
+  font-size:11px;color:var(--text);line-height:1.3}
+.tax-leaf b{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--green);
+  margin-top:3px;font-weight:600}
+.tax-leaf span{display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--dim);margin-top:3px}
+
+/* ===== INFO BANNER ===== */
+.info-banner{background:var(--amber-soft);border:1px solid #5a4520;border-radius:8px;padding:9px 16px;
+  font-size:11.5px;color:#f2c880;display:flex;align-items:center;gap:8px}
+
+/* ===== BOTTOM GRID (tiles) ===== */
+.bottom-grid{display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:12px}
+@media(max-width:1100px){.bottom-grid{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:13px 14px;
+  display:flex;flex-direction:column;justify-content:space-between;min-height:96px}
+.tile-icon{font-size:16px;margin-bottom:6px}
+.tile-val{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--text)}
+.tile-lbl{font-size:11px;color:var(--text);margin-top:2px}
+.tile-code{font-size:9.5px;color:var(--dim);font-family:'IBM Plex Mono',monospace;margin-top:3px}
+.tile.donut{grid-row:span 2}
+
+/* donut */
+.donut-wrap{display:flex;align-items:center;gap:14px}
+.donut-legend{display:flex;flex-direction:column;gap:6px}
+.donut-leg-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.donut-leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.donut-leg-val{font-family:'IBM Plex Mono',monospace;color:var(--text);margin-left:auto;padding-left:10px}
+
+/* ===== DETAIL SECTIONS ===== */
+.section-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1000px){.section-grid-2{grid-template-columns:1fr}}
+
+.sub-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-soft)}
+.sub-row:last-child{border-bottom:none}
+.sub-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sub-name{flex:1;font-size:12px;color:var(--text)}
+.sub-count{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);min-width:38px;text-align:right}
+.sub-bar-bg{width:70px;height:5px;background:var(--panel-3);border-radius:2px}
+.sub-bar{height:100%;border-radius:2px}
+
+.dq-table,.lines-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.dq-table th,.lines-table th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.4px;padding:7px 12px;border-bottom:1px solid var(--border);text-align:left;background:var(--panel-2)}
+.lines-table th.r{text-align:right}
+.dq-table td,.lines-table td{padding:6px 12px;border-bottom:1px solid var(--border-soft);color:var(--text)}
+.lines-table td.r{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+.dq-table tr:last-child td,.lines-table tr:last-child td{border-bottom:none}
+.dq-ok{color:var(--green);font-weight:600;font-family:'IBM Plex Mono',monospace}
+.dq-warn{color:var(--amber);font-weight:600;font-family:'IBM Plex Mono',monospace}
+.dq-label{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px}
+.dq-label.ok{background:var(--green-soft);color:var(--green)}
+.dq-label.warn{background:var(--amber-soft);color:var(--amber)}
+.l-code{display:inline-block;background:var(--blue-soft);color:var(--blue);font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:3px;margin-right:6px;min-width:44px;text-align:center}
+.diff-ok{color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:11px}
+.diff-pos{color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:11px}
+.diff-neg{color:var(--red);font-family:'IBM Plex Mono',monospace;font-size:11px}
+.diff-null{color:var(--dim);font-size:10px}
+
+.footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:8px}
+.footer-txt{font-size:10.5px;color:var(--dim);font-family:'IBM Plex Mono',monospace}
+</style>
+</head>
+<body>
+
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="brand-tag">LTG INFRA</span>
+    <div>
+      <div class="topbar-title">Kelių ūkio duomenų bazė — statistikos skydelis</div>
+      <div class="topbar-sub">GITS · GEOSECMA · pagal GKTR 2.16.01:2002 „Lietuvos geležinkelio GIS specifikacija"</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="filter-group">
+      <label>Kryptis</label>
+      <select id="lineFilter" onchange="applyFilter()" class="filter-select">
+        <option value="ALL">Visos kryptys — visas tinklas</option>
+        <option value="L01">L01 · Vilnius–Klaipėda</option>
+        <option value="L02">L02 · Kaišiadorys–Kybartai–V.S.</option>
+        <option value="L03">L03 · Vilnius–Kena–V.S.</option>
+        <option value="L04">L04 · Kazlų Rūda–Mockava–V.S.</option>
+        <option value="L05">L05 · Kužiai–Mažeikiai–Bugeniai–V.S.</option>
+        <option value="L06">L06 · Radviliškis–Pagėgiai–V.S.</option>
+        <option value="L07">L07 · Klaipėda–Pagėgiai</option>
+        <option value="L08">L08 · Radviliškis–Rokiškis–V.S.</option>
+        <option value="L09">L09 · Vilnius–Stasylos–V.S.</option>
+        <option value="L10">L10 · Šiauliai–Joniškis–V.S.</option>
+        <option value="L11">L11 · Lentvaris–Marcinkonys–V.S.</option>
+        <option value="L12">L12 · Naujoji Vilnia–Turmantas–V.S.</option>
+        <option value="L13">L13 · Kyviškės–Valčiūnai</option>
+        <option value="L14">L14 · Radviliškis–Petrašiūnai</option>
+        <option value="L15">L15 · Senieji Trakai–Trakai</option>
+        <option value="L16">L16 · Gaižiūnai–Palemonas</option>
+        <option value="L17">L17 · Paneriai–Valčiūnai</option>
+        <option value="L18">L18 · Šeštokai–Alytus</option>
+        <option value="L19">L19 · Švenčionėliai–Utena</option>
+        <option value="L20">L20 · Rimkai–Draugystė</option>
+        <option value="L21">L21 · Mažeikiai–V.S.</option>
+        <option value="L22">L22 · Akmenė–Alkiškiai</option>
+        <option value="L23">L23 · Palemonas–Rokai–Jiesia</option>
+        <option value="L24">L24 · Kretinga–Skuodas–V.S.</option>
+        <option value="L25">L25 · Jonava–Rizgonys</option>
+      </select>
+    </div>
+    <div class="topbar-badge">Kategorijų grupė: <b>Kelių ūkis</b></div>
+    <div class="topbar-badge">Šaltinis: <b id="pagesub">vdm_dev.silver</b></div>
+    <div class="live-wrap"><span class="live-dot"></span>Atnaujinta: <span id="update-date"></span></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ===== HERO ROW: KPI | CHARTS | MAP ===== -->
+  <div class="hero-grid">
+
+    <!-- KPI COLUMN -->
+    <div class="col-kpi">
+      <div class="kpi-card">
+        <div class="kpi-val" id="kpi-km">3,523<span class="unit">km</span></div>
+        <div class="kpi-lbl">Geležinkelio kelių ilgis</div>
+        <div class="kpi-code">Kategorija: Geležinkelio keliai</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-val" id="kpi-sw">3,557<span class="unit">vnt</span></div>
+        <div class="kpi-lbl">Iešmai</div>
+        <div class="kpi-code">DIKODAS: gi_ie</div>
+      </div>
+      <div class="kpi-card grey">
+        <div class="kpi-val" id="kpi-sig">4,071<span class="unit">vnt</span></div>
+        <div class="kpi-lbl">Šviesoforai</div>
+        <div class="kpi-code">Signalinė įranga (SĮ)</div>
+      </div>
+    </div>
+
+    <!-- CHARTS COLUMN -->
+    <div class="col-kpi">
+      <div class="panel" style="flex:1.15">
+        <div class="panel-hdr">
+          <span class="panel-hdr-title">GELEŽINKELIO KELIAI PAGAL TIPĄ</span>
+          <span class="panel-hdr-note">GKODAS · Objekto tipas-klasė: Geležinkeliai</span>
+        </div>
+        <div class="panel-body" id="tracks"><!-- JS --></div>
+      </div>
+      <div class="panel" style="flex:1">
+        <div class="panel-hdr">
+          <span class="panel-hdr-title">STOČIŲ SKAITMENIZAVIMO PAŽANGA</span>
+          <span class="panel-hdr-note">GEOD · DWG · ORTO · SAP</span>
+        </div>
+        <div class="panel-body">
+          <div class="gbar-wrap">
+            <div class="gbar-col">
+              <div class="gbar-stack">
+                <div class="gbar-seg" style="height:80%;background:var(--red)"></div>
+                <div class="gbar-seg" style="height:13%;background:var(--amber)"></div>
+                <div class="gbar-seg" style="height:7%;background:var(--green)"></div>
+              </div>
+              <div class="gbar-label">GEOD</div>
+            </div>
+            <div class="gbar-col">
+              <div class="gbar-stack">
+                <div class="gbar-seg" style="height:95%;background:var(--red)"></div>
+                <div class="gbar-seg" style="height:3%;background:var(--amber)"></div>
+                <div class="gbar-seg" style="height:2%;background:var(--green)"></div>
+              </div>
+              <div class="gbar-label">DWG</div>
+            </div>
+            <div class="gbar-col">
+              <div class="gbar-stack">
+                <div class="gbar-seg" style="height:86%;background:var(--red)"></div>
+                <div class="gbar-seg" style="height:5%;background:var(--amber)"></div>
+                <div class="gbar-seg" style="height:9%;background:var(--green)"></div>
+              </div>
+              <div class="gbar-label">ORTO</div>
+            </div>
+            <div class="gbar-col">
+              <div class="gbar-stack">
+                <div class="gbar-seg" style="height:71%;background:var(--red)"></div>
+                <div class="gbar-seg" style="height:14%;background:var(--amber)"></div>
+                <div class="gbar-seg" style="height:15%;background:var(--green)"></div>
+              </div>
+              <div class="gbar-label">SAP</div>
+            </div>
+          </div>
+          <div class="gbar-legend">
+            <div class="gbar-leg-item"><span class="gbar-leg-dot" style="background:var(--green)"></span>Baigta</div>
+            <div class="gbar-leg-item"><span class="gbar-leg-dot" style="background:var(--amber)"></span>Vykdoma</div>
+            <div class="gbar-leg-item"><span class="gbar-leg-dot" style="background:var(--red)"></span>Atidėta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KLASIFIKAVIMO SCHEMA (vietoj žemėlapio) -->
+    <div class="col-map panel">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">OBJEKTŲ KLASIFIKAVIMO STRUKTŪRA</span>
+        <span class="panel-hdr-note">Reglamentas (2010‑06‑01), 3 pav. ir 1 priedas</span>
+      </div>
+      <div class="taxonomy">
+        <div class="tax-root">LG Kelių ūkis<span class="tax-code">Kategorijų grupė</span></div>
+        <div class="tax-vline"></div>
+        <div class="tax-cols">
+          <div class="tax-col">
+            <div class="tax-node cat">Geležinkelio keliai</div>
+            <div class="tax-leaf">Geležinkeliai<b>3,523 km</b><span>gk_I / gk_II / gk_ai / gk_kt / gk_sv</span></div>
+            <div class="tax-leaf">Kryptys<span>gk_kr · sąlyginis vaizdavimas</span></div>
+          </div>
+          <div class="tax-col">
+            <div class="tax-node cat">Geležinkelio įrenginiai ir statiniai</div>
+            <div class="tax-leaf">Geležinkelių įranga<b>iešmai · 3,557 vnt</b><span>gi_ie · gi_at · gi_rn · gi_ss · gi_bs</span></div>
+            <div class="tax-leaf">Geležinkelių pervažos<span>gi_gp</span></div>
+            <div class="tax-leaf">Gabaritiniai vartai<span>gi_gv</span></div>
+          </div>
+          <div class="tax-col">
+            <div class="tax-node cat">Geležinkelio ženklai</div>
+            <div class="tax-leaf">Kelio ženklai<span>pk_km · pk_pk</span></div>
+            <div class="tax-leaf">Nuolatiniai signaliniai ženklai<span>ženk_pv · ženk_rb</span></div>
+            <div class="tax-leaf">Atskaitinė sąlyginė linija<span>gz_pa</span></div>
+            <div class="tax-leaf">Kiti ženklai<span>vt30</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO BANNER -->
+  <div class="info-banner">
+    Objektų klasifikavimas ir DIKODAS reikšmės — pagal „Geležinkelių infrastruktūros Kelių ūkio duomenų bazės reglamentą" (galioja nuo 2010‑06‑01), 1–6 priedai. Duomenų šaltinis: GITS (GEOSECMA) · <span class="mono">vdm_dev.silver</span>.
+  </div>
+
+  <!-- ===== BOTTOM TILE ROW ===== -->
+  <div class="bottom-grid">
+    <div class="tile donut">
+      <div class="tile-lbl" style="font-weight:600;margin-bottom:10px">Iešmų pasiskirstymas <span class="tile-code" style="display:inline">· gi_ie</span></div>
+      <div class="donut-wrap">
+        <svg width="86" height="86" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="34" fill="none" stroke="#eaeef2" stroke-width="14"/>
+          <circle cx="44" cy="44" r="34" fill="none" stroke="var(--green)" stroke-width="15"
+            stroke-dasharray="261 152" stroke-dashoffset="0" transform="rotate(-90 44 44)"/>
+          <circle cx="44" cy="44" r="34" fill="none" stroke="var(--blue)" stroke-width="15"
+            stroke-dasharray="80 333" stroke-dashoffset="-261" transform="rotate(-90 44 44)"/>
+          <circle cx="44" cy="44" r="34" fill="none" stroke="var(--amber)" stroke-width="15"
+            stroke-dasharray="1 412" stroke-dashoffset="-341" transform="rotate(-90 44 44)"/>
+          <text x="44" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="var(--text)" font-family="IBM Plex Mono">3,557</text>
+          <text x="44" y="53" text-anchor="middle" font-size="8" fill="var(--muted)" font-family="IBM Plex Sans">vnt</text>
+        </svg>
+        <div class="donut-legend">
+          <div class="donut-leg-row"><span class="donut-leg-dot" style="background:var(--green)"></span>Kiti iešmai<span class="donut-leg-val">2,598</span></div>
+          <div class="donut-leg-row"><span class="donut-leg-dot" style="background:var(--blue)"></span>Stoties iešmai (K)<span class="donut-leg-val">798</span></div>
+          <div class="donut-leg-row"><span class="donut-leg-dot" style="background:var(--amber)"></span>Pereinamieji (P)<span class="donut-leg-val">1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tile">
+      <div class="tile-icon">⚙</div>
+      <div><div class="tile-val">1,064</div><div class="tile-lbl">Ryšių kabelių mazgai</div><div class="tile-code">OT_23 · Automatikos ūkis</div></div>
+    </div>
+    <div class="tile">
+      <div class="tile-icon">🔌</div>
+      <div><div class="tile-val">975</div><div class="tile-lbl">Kabelių movos, galinė</div><div class="tile-code">OT_9</div></div>
+    </div>
+    <div class="tile">
+      <div class="tile-icon">📡</div>
+      <div><div class="tile-val">876</div><div class="tile-lbl">Inžinerinių tinklų atramos</div><div class="tile-code">OT_16</div></div>
+    </div>
+    <div class="tile">
+      <div class="tile-icon">⛔</div>
+      <div><div class="tile-val">569</div><div class="tile-lbl">Aklakelio atrama</div><div class="tile-code">DIKODAS gi_at</div></div>
+    </div>
+
+    <div class="tile">
+      <div class="tile-icon">🔧</div>
+      <div><div class="tile-val">510</div><div class="tile-lbl">Iešmų elektrinė pavara</div><div class="tile-code">OT_35 · Automatikos ūkis</div></div>
+    </div>
+    <div class="tile">
+      <div class="tile-icon">🎚</div>
+      <div><div class="tile-val">247</div><div class="tile-lbl">Iešmo padėties jutiklis</div><div class="tile-code">OT_36 · Automatikos ūkis</div></div>
+    </div>
+    <div class="tile">
+      <div class="tile-icon">🚩</div>
+      <div><div class="tile-val">72</div><div class="tile-lbl">Saugos smailės</div><div class="tile-code">DIKODAS gi_ss</div></div>
+    </div>
+    <div class="tile">
+      <div class="tile-icon">🚧</div>
+      <div><div class="tile-val">—</div><div class="tile-lbl">Geležinkelio pervažos</div><div class="tile-code">DIKODAS gi_gp</div></div>
+    </div>
+  </div>
+
+  <!-- ===== KRYPČIŲ ILGIAI (VDM vs GIPS) ===== -->
+  <div class="panel">
+    <div class="panel-hdr">
+      <span class="panel-hdr-title">KRYPČIŲ ILGIAI</span>
+      <span class="panel-hdr-note">VDM silver.tracks · GIPS silver.lines — palyginimas</span>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <div style="display:flex;border-bottom:1px solid var(--border-soft)">
+        <div style="flex:1;padding:12px 16px;border-right:1px solid var(--border-soft)">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">VDM · mainTrack (pagrindinis kelias)</div>
+          <div class="mono" style="font-size:22px;font-weight:600;color:var(--green)">2,360.9 <span style="font-size:12px;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;font-weight:400">km</span></div>
+        </div>
+        <div style="flex:1;padding:12px 16px;border-right:1px solid var(--border-soft)">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">GIPS · silver.lines (kryptys)</div>
+          <div class="mono" style="font-size:22px;font-weight:600;color:var(--blue)">1,987.5 <span style="font-size:12px;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;font-weight:400">km</span></div>
+        </div>
+        <div style="flex:1;padding:12px 16px">
+          <div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Krypčių be ilgio</div>
+          <div class="mono" style="font-size:22px;font-weight:600;color:var(--amber)">0 <span style="font-size:12px;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;font-weight:400">krypčių</span></div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="lines-table">
+          <thead><tr><th>Kryptis</th><th class="r">VDM mainTrack, km</th><th class="r">GIPS, km</th></tr></thead>
+          <tbody id="lines-tbody"></tbody>
+        </table>
+      </div>
+      <div style="padding:9px 14px;font-size:10px;color:var(--dim);border-top:1px solid var(--border-soft)">
+        Šaltiniai: VDM — <span class="mono">silver.tracks WHERE trackType='mainTrack'</span> · GIPS — <span class="mono">silver.lines WHERE mainRoad=true</span>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ŠVIESOFORAI + DQ ===== -->
+  <div class="section-grid-2">
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">SIGNALINĖS ĮRANGOS TIPAI</span>
+        <span class="panel-hdr-note">SĮ šviesoforai</span>
+      </div>
+      <div class="panel-body">
+        <div class="sub-row"><div class="sub-dot" style="background:var(--green)"></div><span class="sub-name">Manevriniai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:100%;background:var(--green)"></div></div><span class="sub-count">1,659</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:#2d7a50"></div><span class="sub-name">Išleidžiamieji</span><div class="sub-bar-bg"><div class="sub-bar" style="width:58%;background:#2d7a50"></div></div><span class="sub-count">962</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:#3d9966"></div><span class="sub-name">Tarpstočio</span><div class="sub-bar-bg"><div class="sub-bar" style="width:32%;background:#3d9966"></div></div><span class="sub-count">527</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:var(--blue)"></div><span class="sub-name">Maršrutiniai</span><div class="sub-bar-bg"><div class="sub-bar" style="width:23%;background:var(--blue)"></div></div><span class="sub-count">386</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:#3b6fc4"></div><span class="sub-name">Įleidžiamieji</span><div class="sub-bar-bg"><div class="sub-bar" style="width:19%;background:#3b6fc4"></div></div><span class="sub-count">310</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:var(--amber)"></div><span class="sub-name">Įspėjamieji</span><div class="sub-bar-bg"><div class="sub-bar" style="width:5%;background:var(--amber)"></div></div><span class="sub-count">83</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:var(--red)"></div><span class="sub-name">Atitveriamieji</span><div class="sub-bar-bg"><div class="sub-bar" style="width:1%;background:var(--red)"></div></div><span class="sub-count">13</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:#c23b36"></div><span class="sub-name">Kalnelio</span><div class="sub-bar-bg"><div class="sub-bar" style="width:1%;background:#c23b36"></div></div><span class="sub-count">9</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:var(--muted)"></div><span class="sub-name">Antriniai (AL, AN, AK ir kt.)</span><div class="sub-bar-bg"><div class="sub-bar" style="width:6%;background:var(--muted)"></div></div><span class="sub-count">97</span></div>
+        <div class="sub-row"><div class="sub-dot" style="background:var(--dim)"></div><span class="sub-name">Kelrodžiai / kiti</span><div class="sub-bar-bg"><div class="sub-bar" style="width:2%;background:var(--dim)"></div></div><span class="sub-count">25</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">DUOMENŲ KOKYBĖ</span>
+        <span class="panel-hdr-note">Atributinių laukų reikšmių katalogai · vdm_dev.silver</span>
+      </div>
+      <div class="panel-body" style="padding:6px 0">
+        <table class="dq-table">
+          <thead><tr><th>Sluoksnis / GKODAS</th><th>Reikšmė</th><th>Būsena</th></tr></thead>
+          <tbody>
+            <tr><td>gk_I / gk_II — pagrindinis kelias</td><td class="dq-ok">2,360.9 km</td><td><span class="dq-label ok">OK</span></td></tr>
+            <tr><td>gk_kt — stoties kiti keliai</td><td class="dq-ok">687.4 km</td><td><span class="dq-label ok">OK</span></td></tr>
+            <tr><td>gk_ai — atvykimo/išvykimo keliai</td><td class="dq-ok">444.3 km</td><td><span class="dq-label ok">OK</span></td></tr>
+            <tr><td>gk_sv — sąvažos</td><td class="dq-ok">24.6 km</td><td><span class="dq-label ok">OK</span></td></tr>
+            <tr><td>GKODAS nenustatytas</td><td class="dq-warn">0.1 km</td><td><span class="dq-label warn">Tikrinti</span></td></tr>
+            <tr><td>gi_ie — iešmai</td><td class="dq-ok">3,557 vnt</td><td><span class="dq-label ok">OK</span></td></tr>
+            <tr><td>SĮ šviesoforai</td><td class="dq-ok">4,071 vnt</td><td><span class="dq-label ok">OK</span></td></tr>
+            <tr><td>Objekto tipas-klasė nepriskirta</td><td class="dq-warn">1,576 vnt</td><td><span class="dq-label warn">Neklasif.</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-txt">Šaltinis: GITS (GEOSECMA) · vdm_dev.silver · pagal GKTR 2.16.01:2002 ir Kelių ūkio DB reglamentą (galioja nuo 2010‑06‑01) · Atnaujinta: <span id="footer-date"></span></div>
+  <div class="footer-txt">LTG Infra · InfraMap</div>
+</div>
+
+<script>
+const LINE_DATA = {
+  ALL:{main:2366.0,siding:687.4,secondary:444.3,connecting:24.6,unknown:0.1,total:3522.8},
+  L01:{main:646.5,siding:260.0,secondary:166.7,connecting:11.5,unknown:28.9,total:1113.6},
+  L02:{main:300.2,siding:85.0,secondary:38.6,connecting:2.0,unknown:8.4,total:434.2},
+  L03:{main:79.5,siding:18.1,secondary:27.1,connecting:1.1,unknown:0,total:125.8},
+  L04:{main:140.5,siding:15.9,secondary:14.6,connecting:0.3,unknown:1.3,total:172.6},
+  L05:{main:91.9,siding:25.2,secondary:29.1,connecting:1.5,unknown:6.2,total:153.9},
+  L06:{main:152.7,siding:11.5,secondary:18.2,connecting:0.3,unknown:0,total:182.7},
+  L07:{main:83.4,siding:19.0,secondary:11.9,connecting:0.7,unknown:0,total:115.0},
+  L08:{main:161.5,siding:39.0,secondary:17.4,connecting:0.6,unknown:0,total:218.5},
+  L09:{main:53.7,siding:10.8,secondary:10.1,connecting:0.2,unknown:0,total:74.8},
+  L10:{main:55.6,siding:10.4,secondary:9.8,connecting:0.1,unknown:0,total:75.9},
+  L11:{main:101.0,siding:13.7,secondary:15.8,connecting:0.3,unknown:0.2,total:131.0},
+  L12:{main:153.4,siding:29.8,secondary:16.9,connecting:1.0,unknown:0,total:201.1},
+  L13:{main:39.3,siding:0,secondary:0,connecting:0,unknown:0,total:39.3},
+  L14:{main:39.9,siding:3.0,secondary:8.4,connecting:0.4,unknown:0,total:51.7},
+  L15:{main:3.2,siding:0,secondary:0,connecting:0,unknown:0,total:3.2},
+  L16:{main:23.5,siding:0.9,secondary:2.0,connecting:0.2,unknown:0,total:26.6},
+  L17:{main:24.8,siding:35.9,secondary:20.2,connecting:2.8,unknown:3.5,total:87.2},
+  L18:{main:38.0,siding:9.3,secondary:0,connecting:0.1,unknown:0,total:47.4},
+  L19:{main:46.8,siding:17.7,secondary:0,connecting:0.1,unknown:0,total:64.6},
+  L20:{main:5.6,siding:28.0,secondary:33.7,connecting:1.2,unknown:0,total:68.5},
+  L21:{main:18.9,siding:0,secondary:0,connecting:0,unknown:0,total:18.9},
+  L22:{main:11.8,siding:6.7,secondary:0,connecting:0,unknown:0,total:18.5},
+  L23:{main:15.7,siding:0,secondary:1.2,connecting:0,unknown:0,total:16.9},
+  L24:{main:51.3,siding:3.2,secondary:1.8,connecting:0,unknown:0,total:56.3},
+  L25:{main:22.3,siding:2.8,secondary:0.9,connecting:0,unknown:0,total:26.0}
+};
+
+const LINE_NAMES = {ALL:'Visos kryptys',L01:'Vilnius–Klaipėda',L02:'Kaišiadorys–Kybartai–V.S.',L03:'Vilnius–Kena–V.S.',L04:'Kazlų Rūda–Mockava–V.S.',L05:'Kužiai–Mažeikiai–Bugeniai–V.S.',L06:'Radviliškis–Pagėgiai–V.S.',L07:'Klaipėda–Pagėgiai',L08:'Radviliškis–Rokiškis–V.S.',L09:'Vilnius–Stasylos–V.S.',L10:'Šiauliai–Joniškis–V.S.',L11:'Lentvaris–Marcinkonys–V.S.',L12:'Naujoji Vilnia–Turmantas–V.S.',L13:'Kyviškės–Valčiūnai',L14:'Radviliškis–Petrašiūnai',L15:'Senieji Trakai–Trakai',L16:'Gaižiūnai–Palemonas',L17:'Paneriai–Valčiūnai',L18:'Šeštokai–Alytus',L19:'Švenčionėliai–Utena',L20:'Rimkai–Draugystė',L21:'Mažeikiai–V.S.',L22:'Akmenė–Alkiškiai',L23:'Palemonas–Rokai–Jiesia',L24:'Kretinga–Skuodas–V.S.',L25:'Jonava–Rizgonys'};
+
+const OBJ_BY_LINE = {
+  ALL:{Switch:3557,Signal:415},
+  L01:{Switch:1436,Signal:135}, L02:{Switch:404,Signal:43}, L03:{Switch:171,Signal:18},
+  L04:{Switch:88,Signal:11}, L05:{Switch:158,Signal:17}, L06:{Switch:76,Signal:14},
+  L07:{Switch:79,Signal:12}, L08:{Switch:144,Signal:15}, L09:{Switch:77,Signal:14},
+  L10:{Switch:61,Signal:7}, L11:{Switch:71,Signal:14}, L12:{Switch:110,Signal:15},
+  L13:{Switch:0,Signal:4}, L14:{Switch:26,Signal:1}, L15:{Switch:0,Signal:2},
+  L16:{Switch:8,Signal:4}, L17:{Switch:156,Signal:15}, L18:{Switch:22,Signal:0},
+  L19:{Switch:25,Signal:0}, L20:{Switch:141,Signal:4}, L21:{Switch:0,Signal:1},
+  L22:{Switch:13,Signal:2}, L23:{Switch:2,Signal:4}, L24:{Switch:15,Signal:0}, L25:{Switch:10,Signal:0}
+};
+
+function applyFilter(){
+  const v=document.getElementById('lineFilter').value;
+  const d=LINE_DATA[v]||LINE_DATA.ALL;
+  const obj=OBJ_BY_LINE[v]||OBJ_BY_LINE.ALL;
+  const total=d.total;
+  document.getElementById('pagesub').textContent = v==='ALL' ? 'vdm_dev.silver — visas tinklas' : `vdm_dev.silver — ${LINE_NAMES[v]||v}`;
+  document.getElementById('kpi-km').innerHTML=fmt(total)+'<span class="unit">km</span>';
+
+  const tracks=[
+    {km:d.main,color:'var(--green)',label:'Pagrindinis kelias',code:'gk_I / gk_II'},
+    {km:d.siding,color:'#2d7a50',label:'Stoties kiti keliai',code:'gk_kt'},
+    {km:d.secondary,color:'#3d9966',label:'Atvykimo–išvykimo keliai',code:'gk_ai'},
+    {km:d.connecting,color:'var(--amber)',label:'Sąvažos',code:'gk_sv'},
+    {km:d.unknown,color:'var(--dim)',label:'GKODAS nenustatytas',code:'null'},
+  ];
+  const html=tracks.map(t=>{
+    const pct=total>0?Math.round(t.km/total*1000)/10:0;
+    return `<div class="hbar-item">
+      <div class="hbar-top"><span class="hbar-name">${t.label}<span class="hbar-code">${t.code}</span></span><span class="hbar-km">${t.km.toFixed(1)} km</span></div>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${t.color}"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('tracks').innerHTML=html;
+
+  const swEl=document.getElementById('kpi-sw');
+  if(swEl) swEl.innerHTML=obj.Switch.toLocaleString('lt-LT')+'<span class="unit">vnt</span>';
+  const sigEl=document.getElementById('kpi-sig');
+  if(sigEl) sigEl.innerHTML=obj.Signal.toLocaleString('lt-LT')+'<span class="unit">vnt</span>';
+}
+
+function fmt(n){return n.toLocaleString('lt-LT',{minimumFractionDigits:0,maximumFractionDigits:1});}
+
+const LINES_GIPS_DETAIL = [
+  {code:'L01-I',  name:'Vilnius–Klaipėda',               vdm:646.528, gips:372.497},
+  {code:'L02-I',  name:'Kaišiadorys–Kybartai–VS',        vdm:300.216, gips:null},
+  {code:'L03-I',  name:'Vilnius–Kena–VS',                vdm:79.538,  gips:35.951},
+  {code:'L04-I',  name:'Kazlų Rūda–Mockava–VS',          vdm:140.486, gips:null},
+  {code:'L05-I',  name:'Kužiai–Mažeikiai–Bugeniai–VS',   vdm:91.947,  gips:null},
+  {code:'L06-I',  name:'Radviliškis–Pagėgiai–VS',        vdm:152.682, gips:147.749},
+  {code:'L07-I',  name:'Klaipėda–Pagėgiai',              vdm:83.376,  gips:83.923},
+  {code:'L08-I',  name:'Radviliškis–Rokiškis–VS',        vdm:161.495, gips:null},
+  {code:'L09-I',  name:'Vilnius–Stasylos–VS',            vdm:53.667,  gips:49.799},
+  {code:'L10-I',  name:'Šiauliai–Joniškis–VS',           vdm:55.642,  gips:59.516},
+  {code:'L11-I',  name:'Lentvaris–Marcinkonys–VS',       vdm:100.961, gips:null},
+  {code:'L12-I',  name:'N.Vilnia–Turmantas–VS',          vdm:153.381, gips:null},
+  {code:'L13-I',  name:'Kyviškės–Valčiūnai',             vdm:39.264,  gips:24.929},
+  {code:'L14-I',  name:'Radviliškis–Petrašiūnai',        vdm:39.908,  gips:null},
+  {code:'L15-I',  name:'Senieji Trakai–Trakai',          vdm:3.171,   gips:3.748},
+  {code:'L16-I',  name:'Gaižiūnai–Palemonas',            vdm:23.489,  gips:24.384},
+  {code:'L17-I',  name:'Paneriai–Valčiūnai',             vdm:24.767,  gips:23.458},
+  {code:'L18-I',  name:'Šeštokai–Alytus',                vdm:38.014,  gips:null},
+  {code:'L19-I',  name:'Švenčionėliai–Utena',            vdm:46.848,  gips:47.343},
+  {code:'L20-I',  name:'Rimkai–Draugystė',               vdm:5.566,   gips:3.157},
+  {code:'L21-I',  name:'Mažeikiai–VS',                   vdm:18.922,  gips:18.922},
+  {code:'L22-I',  name:'Akmenė–Alkiškiai',               vdm:11.752,  gips:11.426},
+  {code:'L23-I',  name:'Palemonas–Rokai–Jiesia',         vdm:15.707,  gips:14.312},
+  {code:'L24-I',  name:'Kretinga–Skuodas–VS',            vdm:51.313,  gips:null},
+  {code:'L25-I',  name:'Jonava–Rizgonys',                vdm:22.268,  gips:null},
+];
+
+function buildLinesTable(){
+  const tbody = document.getElementById('lines-tbody');
+  if(!tbody) return;
+  let html = '';
+  LINES_GIPS_DETAIL.forEach(l => {
+    const vdmStr  = l.vdm  != null ? l.vdm.toFixed(3)  : '—';
+    const gipsStr = l.gips != null ? l.gips.toFixed(3) : '—';
+    let diffStr = '<span class="diff-null">—</span>';
+    if(l.vdm != null && l.gips != null){
+      const diff = l.vdm - l.gips;
+      const cls  = Math.abs(diff) < 1 ? 'diff-ok' : (diff > 0 ? 'diff-pos' : 'diff-neg');
+      diffStr = `<span class="${cls}">${diff > 0 ? '+' : ''}${diff.toFixed(3)}</span>`;
+    }
+    html += `<tr>
+      <td><span class="l-code">${l.code}</span>${l.name}</td>
+      <td class="r">${vdmStr}</td>
+      <td class="r">${gipsStr}</td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+buildLinesTable();
+applyFilter();
+
+const BASE = 'https://arcgis.litrail.lt/server/rest/services/VDM';
+const IESMAI_URL   = `${BASE}/2_Iesmai_ir_sankirtos/FeatureServer/0/query?where=1%3D1&returnCountOnly=true&f=json`;
+const SVIESOF_URL  = `${BASE}/5_Signalizacija_ir_eismo_valdymas/FeatureServer/0/query?where=1%3D1&returnCountOnly=true&f=json`;
+const KELIAI_URL   = `${BASE}/1_1_Keliai/FeatureServer/2/query?where=1%3D1&outStatistics=%5B%7B%22statisticType%22%3A%22sum%22%2C%22onStatisticField%22%3A%22Shape.STLength()%22%2C%22outStatisticFieldName%22%3A%22total_length%22%7D%5D&f=json`;
+
+function fmt2(n){return n.toLocaleString('lt-LT',{maximumFractionDigits:0});}
+
+async function fetchLiveData(){
+  const now = new Date().toISOString().split('T')[0];
+  try {
+    const [iesmai, sviesof, keliai] = await Promise.all([
+      fetch(IESMAI_URL).then(r=>r.json()),
+      fetch(SVIESOF_URL).then(r=>r.json()),
+      fetch(KELIAI_URL).then(r=>r.json())
+    ]);
+
+    if(iesmai.count !== undefined){
+      const swEl = document.getElementById('kpi-sw');
+      if(swEl) swEl.innerHTML = fmt2(iesmai.count) + '<span class="unit">vnt</span>';
+    }
+    if(sviesof.count !== undefined){
+      const sigEl = document.getElementById('kpi-sig');
+      if(sigEl) sigEl.innerHTML = fmt2(sviesof.count) + '<span class="unit">vnt</span>';
+    }
+    if(keliai.features?.[0]?.attributes?.total_length){
+      const kmVal = Math.round(keliai.features[0].attributes.total_length / 1000);
+      const kmEl = document.getElementById('kpi-km');
+      if(kmEl) kmEl.innerHTML = fmt2(kmVal) + '<span class="unit">km</span>';
+    }
+
+    document.getElementById('footer-date').textContent = now + ' (live)';
+    document.getElementById('update-date').textContent = now + ' (live)';
+    console.log('✓ Live duomenys užkrauti iš ArcGIS');
+  } catch(e) {
+    console.warn('ArcGIS fetch nepavyko, rodomi statiniai duomenys:', e);
+    document.getElementById('footer-date').textContent = now + ' (statinis)';
+    document.getElementById('update-date').textContent = now + ' (statinis)';
+  }
+}
+
+fetchLiveData();
+</script>
+</body>
+</html>
