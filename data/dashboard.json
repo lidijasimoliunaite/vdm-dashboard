@@ -1,0 +1,582 @@
+{
+  "meta": {
+    "title": "Kelių ūkio duomenų bazė — statistikos skydelis",
+    "subtitle": "GITS · GEOSECMA · pagal GKTR 2.16.01:2002 „Lietuvos geležinkelio GIS specifikacija\"",
+    "brand": "LTG INFRA",
+    "product": "InfraMap",
+    "category_group": "Kelių ūkis",
+    "source": "vdm_dev.silver",
+    "regulation": "Geležinkelių infrastruktūros Kelių ūkio duomenų bazės reglamentas (galioja nuo 2010-06-01)"
+  },
+  "kpi": {
+    "track_km": 3588.1,
+    "switches": 3561,
+    "signals": 4071
+  },
+  "lines": {
+    "ALL": {
+      "name": "Visos kryptys",
+      "main": 2431.6,
+      "siding": 687.2,
+      "secondary": 444.3,
+      "connecting": 25.0,
+      "unknown": 0,
+      "switches": 3561,
+      "signals": 4071,
+      "vdm_main_exact": null,
+      "gips": null
+    },
+    "L01": {
+      "name": "Vilnius–Klaipėda",
+      "main": 632.0,
+      "siding": 286.3,
+      "secondary": 166.7,
+      "connecting": 11.8,
+      "unknown": 0,
+      "switches": 1481,
+      "signals": 131,
+      "vdm_main_exact": 632.016,
+      "gips": null
+    },
+    "L02": {
+      "name": "Kaišiadorys–Kybartai–V.S.",
+      "main": 421.7,
+      "siding": 90.2,
+      "secondary": 38.6,
+      "connecting": 2.0,
+      "unknown": 0,
+      "switches": 427,
+      "signals": 43,
+      "vdm_main_exact": 421.654,
+      "gips": null
+    },
+    "L03": {
+      "name": "Vilnius–Kena–V.S.",
+      "main": 79.5,
+      "siding": 18.1,
+      "secondary": 27.1,
+      "connecting": 1.1,
+      "unknown": 0,
+      "switches": 171,
+      "signals": 18,
+      "vdm_main_exact": 79.538,
+      "gips": 35.951
+    },
+    "L04": {
+      "name": "Kazlų Rūda–Mockava–V.S.",
+      "main": 141.2,
+      "siding": 15.8,
+      "secondary": 14.6,
+      "connecting": 0.3,
+      "unknown": 0,
+      "switches": 88,
+      "signals": 11,
+      "vdm_main_exact": 141.21,
+      "gips": null
+    },
+    "L05": {
+      "name": "Kužiai–Mažeikiai–Bugeniai–V.S.",
+      "main": 91.9,
+      "siding": 32.4,
+      "secondary": 29.1,
+      "connecting": 1.5,
+      "unknown": 0,
+      "switches": 160,
+      "signals": 17,
+      "vdm_main_exact": 91.947,
+      "gips": null
+    },
+    "L06": {
+      "name": "Radviliškis–Pagėgiai–V.S.",
+      "main": 152.7,
+      "siding": 11.5,
+      "secondary": 18.2,
+      "connecting": 0.3,
+      "unknown": 0,
+      "switches": 78,
+      "signals": 14,
+      "vdm_main_exact": 152.682,
+      "gips": 147.749
+    },
+    "L07": {
+      "name": "Klaipėda–Pagėgiai",
+      "main": 83.4,
+      "siding": 19.0,
+      "secondary": 11.9,
+      "connecting": 0.7,
+      "unknown": 0,
+      "switches": 83,
+      "signals": 12,
+      "vdm_main_exact": 83.376,
+      "gips": 83.923
+    },
+    "L08": {
+      "name": "Radviliškis–Rokiškis–V.S.",
+      "main": 161.5,
+      "siding": 39.0,
+      "secondary": 17.4,
+      "connecting": 0.6,
+      "unknown": 0,
+      "switches": 148,
+      "signals": 15,
+      "vdm_main_exact": 161.495,
+      "gips": null
+    },
+    "L09": {
+      "name": "Vilnius–Stasylos–V.S.",
+      "main": 53.7,
+      "siding": 10.8,
+      "secondary": 10.1,
+      "connecting": 0.2,
+      "unknown": 0,
+      "switches": 79,
+      "signals": 14,
+      "vdm_main_exact": 53.655,
+      "gips": 49.799
+    },
+    "L10": {
+      "name": "Šiauliai–Joniškis–V.S.",
+      "main": 18.7,
+      "siding": 10.4,
+      "secondary": 9.8,
+      "connecting": 0.1,
+      "unknown": 0,
+      "switches": 65,
+      "signals": 2,
+      "vdm_main_exact": 18.673,
+      "gips": null
+    },
+    "L11": {
+      "name": "Lentvaris–Marcinkonys–V.S.",
+      "main": 101.0,
+      "siding": 13.8,
+      "secondary": 15.8,
+      "connecting": 0.3,
+      "unknown": 0,
+      "switches": 75,
+      "signals": 14,
+      "vdm_main_exact": 100.961,
+      "gips": null
+    },
+    "L12": {
+      "name": "Naujoji Vilnia–Turmantas–V.S.",
+      "main": 153.4,
+      "siding": 29.8,
+      "secondary": 16.9,
+      "connecting": 1.0,
+      "unknown": 0,
+      "switches": 117,
+      "signals": 15,
+      "vdm_main_exact": 153.375,
+      "gips": null
+    },
+    "L13": {
+      "name": "Kyviškės–Valčiūnai",
+      "main": 39.3,
+      "siding": 0,
+      "secondary": 0,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 0,
+      "signals": 4,
+      "vdm_main_exact": 39.264,
+      "gips": 24.929
+    },
+    "L14": {
+      "name": "Radviliškis–Petrašiūnai",
+      "main": 40.0,
+      "siding": 3.0,
+      "secondary": 8.4,
+      "connecting": 0.4,
+      "unknown": 0,
+      "switches": 28,
+      "signals": 1,
+      "vdm_main_exact": 39.952,
+      "gips": null
+    },
+    "L15": {
+      "name": "Senieji Trakai–Trakai",
+      "main": 3.2,
+      "siding": 0,
+      "secondary": 0,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 0,
+      "signals": 2,
+      "vdm_main_exact": 3.171,
+      "gips": 3.748
+    },
+    "L16": {
+      "name": "Gaižiūnai–Palemonas",
+      "main": 23.5,
+      "siding": 0.9,
+      "secondary": 2.0,
+      "connecting": 0.2,
+      "unknown": 0,
+      "switches": 8,
+      "signals": 4,
+      "vdm_main_exact": 23.489,
+      "gips": 24.384
+    },
+    "L17": {
+      "name": "Paneriai–Valčiūnai",
+      "main": 24.8,
+      "siding": 39.3,
+      "secondary": 20.2,
+      "connecting": 2.9,
+      "unknown": 0,
+      "switches": 157,
+      "signals": 15,
+      "vdm_main_exact": 24.767,
+      "gips": 23.458
+    },
+    "L18": {
+      "name": "Šeštokai–Alytus",
+      "main": 38.0,
+      "siding": 9.3,
+      "secondary": 0,
+      "connecting": 0.1,
+      "unknown": 0,
+      "switches": 22,
+      "signals": 0,
+      "vdm_main_exact": 38.014,
+      "gips": null
+    },
+    "L19": {
+      "name": "Švenčionėliai–Utena",
+      "main": 46.8,
+      "siding": 17.8,
+      "secondary": 0,
+      "connecting": 0.1,
+      "unknown": 0,
+      "switches": 26,
+      "signals": 0,
+      "vdm_main_exact": 46.848,
+      "gips": 47.343
+    },
+    "L20": {
+      "name": "Rimkai–Draugystė",
+      "main": 5.6,
+      "siding": 27.2,
+      "secondary": 33.7,
+      "connecting": 1.2,
+      "unknown": 0,
+      "switches": 152,
+      "signals": 4,
+      "vdm_main_exact": 5.566,
+      "gips": 3.157
+    },
+    "L21": {
+      "name": "Mažeikiai–V.S.",
+      "main": 18.9,
+      "siding": 0,
+      "secondary": 0,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 0,
+      "signals": 1,
+      "vdm_main_exact": 18.922,
+      "gips": 18.922
+    },
+    "L22": {
+      "name": "Akmenė–Alkiškiai",
+      "main": 11.8,
+      "siding": 6.7,
+      "secondary": 0,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 13,
+      "signals": 2,
+      "vdm_main_exact": 11.752,
+      "gips": 11.426
+    },
+    "L23": {
+      "name": "Palemonas–Rokai–Jiesia",
+      "main": 15.7,
+      "siding": 0,
+      "secondary": 1.2,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 2,
+      "signals": 4,
+      "vdm_main_exact": 15.707,
+      "gips": 14.312
+    },
+    "L24": {
+      "name": "Kretinga–Skuodas–V.S.",
+      "main": 51.3,
+      "siding": 3.2,
+      "secondary": 1.8,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 15,
+      "signals": 0,
+      "vdm_main_exact": 51.313,
+      "gips": null
+    },
+    "L25": {
+      "name": "Jonava–Rizgonys",
+      "main": 22.3,
+      "siding": 2.8,
+      "secondary": 0.9,
+      "connecting": 0,
+      "unknown": 0,
+      "switches": 10,
+      "signals": 0,
+      "vdm_main_exact": 22.268,
+      "gips": null
+    }
+  },
+  "digitization": [
+    {
+      "label": "GEOD",
+      "done": 7,
+      "in_progress": 13,
+      "postponed": 80
+    },
+    {
+      "label": "DWG",
+      "done": 2,
+      "in_progress": 3,
+      "postponed": 95
+    },
+    {
+      "label": "ORTO",
+      "done": 9,
+      "in_progress": 5,
+      "postponed": 86
+    },
+    {
+      "label": "SAP",
+      "done": 15,
+      "in_progress": 14,
+      "postponed": 71
+    }
+  ],
+  "switch_split": [
+    {
+      "label": "Kiti iešmai",
+      "value": 2598,
+      "color": "green"
+    },
+    {
+      "label": "Stoties iešmai (K)",
+      "value": 798,
+      "color": "blue"
+    },
+    {
+      "label": "Pereinamieji (P)",
+      "value": 1,
+      "color": "amber"
+    }
+  ],
+  "tiles": [
+    {
+      "icon": "⚙",
+      "value": 1064,
+      "label": "Ryšių kabelių mazgai",
+      "code": "OT_23 · Automatikos ūkis"
+    },
+    {
+      "icon": "🔌",
+      "value": 975,
+      "label": "Kabelių movos, galinė",
+      "code": "OT_9"
+    },
+    {
+      "icon": "📡",
+      "value": 876,
+      "label": "Inžinerinių tinklų atramos",
+      "code": "OT_16"
+    },
+    {
+      "icon": "⛔",
+      "value": 570,
+      "label": "Aklakelio atrama",
+      "code": "DIKODAS gi_at"
+    },
+    {
+      "icon": "🔧",
+      "value": 510,
+      "label": "Iešmų elektrinė pavara",
+      "code": "OT_35 · Automatikos ūkis"
+    },
+    {
+      "icon": "🎚",
+      "value": 247,
+      "label": "Iešmo padėties jutiklis",
+      "code": "OT_36 · Automatikos ūkis"
+    },
+    {
+      "icon": "🚩",
+      "value": 72,
+      "label": "Saugos smailės",
+      "code": "DIKODAS gi_ss"
+    },
+    {
+      "icon": "🚧",
+      "value": null,
+      "label": "Geležinkelio pervažos",
+      "code": "DIKODAS gi_gp"
+    }
+  ],
+  "signal_types": [
+    {
+      "label": "Manevriniai",
+      "value": 1659,
+      "color": "#1a8a54"
+    },
+    {
+      "label": "Išleidžiamieji",
+      "value": 962,
+      "color": "#2d7a50"
+    },
+    {
+      "label": "Tarpstočio",
+      "value": 527,
+      "color": "#3d9966"
+    },
+    {
+      "label": "Maršrutiniai",
+      "value": 386,
+      "color": "#2f6fe0"
+    },
+    {
+      "label": "Įleidžiamieji",
+      "value": 314,
+      "color": "#3b6fc4"
+    },
+    {
+      "label": "Įspėjamieji",
+      "value": 83,
+      "color": "#c9820f"
+    },
+    {
+      "label": "Atitveriamieji",
+      "value": 13,
+      "color": "#d3453f"
+    },
+    {
+      "label": "Kalnelio",
+      "value": 9,
+      "color": "#c23b36"
+    },
+    {
+      "label": "Antriniai (AL, AN, AK ir kt.)",
+      "value": 102,
+      "color": "#6b7789"
+    },
+    {
+      "label": "Kelrodžiai / kiti",
+      "value": 16,
+      "color": "#9aa5b3"
+    }
+  ],
+  "data_quality": [
+    {
+      "layer": "gk_I / gk_II — pagrindinis kelias",
+      "value": "2431.6 km",
+      "ok": true
+    },
+    {
+      "layer": "gk_kt — stoties kiti keliai",
+      "value": "687.2 km",
+      "ok": true
+    },
+    {
+      "layer": "gk_ai — atvykimo/išvykimo keliai",
+      "value": "444.3 km",
+      "ok": true
+    },
+    {
+      "layer": "gk_sv — sąvažos",
+      "value": "25.0 km",
+      "ok": true
+    },
+    {
+      "layer": "GKODAS nenustatytas",
+      "value": "0 km",
+      "ok": true
+    },
+    {
+      "layer": "gi_ie — iešmai",
+      "value": "3561 vnt",
+      "ok": true
+    },
+    {
+      "layer": "SĮ šviesoforai",
+      "value": "4071 vnt",
+      "ok": true
+    },
+    {
+      "layer": "Objekto tipas-klasė nepriskirta",
+      "value": "4541 vnt",
+      "ok": false,
+      "status": "Neklasif."
+    },
+    {
+      "layer": "Šviesoforai, susieti su keliu (relations)",
+      "value": "343 iš 4071",
+      "ok": false,
+      "status": "Tikrinti"
+    }
+  ],
+  "taxonomy": {
+    "root": "LG Kelių ūkis",
+    "categories": [
+      {
+        "name": "Geležinkelio keliai",
+        "leaves": [
+          {
+            "name": "Geležinkeliai",
+            "highlight": "3588 km",
+            "codes": "gk_I / gk_II / gk_ai / gk_kt / gk_sv"
+          },
+          {
+            "name": "Kryptys",
+            "codes": "gk_kr · sąlyginis vaizdavimas"
+          }
+        ]
+      },
+      {
+        "name": "Geležinkelio įrenginiai ir statiniai",
+        "leaves": [
+          {
+            "name": "Geležinkelių įranga",
+            "highlight": "iešmai · 3561 vnt",
+            "codes": "gi_ie · gi_at · gi_rn · gi_ss · gi_bs"
+          },
+          {
+            "name": "Geležinkelių pervažos",
+            "codes": "gi_gp"
+          },
+          {
+            "name": "Gabaritiniai vartai",
+            "codes": "gi_gv"
+          }
+        ]
+      },
+      {
+        "name": "Geležinkelio ženklai",
+        "leaves": [
+          {
+            "name": "Kelio ženklai",
+            "codes": "pk_km · pk_pk"
+          },
+          {
+            "name": "Nuolatiniai signaliniai ženklai",
+            "codes": "ženk_pv · ženk_rb"
+          },
+          {
+            "name": "Atskaitinė sąlyginė linija",
+            "codes": "gz_pa"
+          },
+          {
+            "name": "Kiti ženklai",
+            "codes": "vt30"
+          }
+        ]
+      }
+    ]
+  }
+}
